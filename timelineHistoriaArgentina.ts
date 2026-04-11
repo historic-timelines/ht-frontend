@@ -91,6 +91,17 @@ export const timelineHistoriaArgentina: Timeline = {
         `,
         },
         {
+            title: "Consolidación del modelo agroexportador",
+            start: utcDate(1860, 1, 1),
+            end: utcDate(1914, 1, 1),
+            color: "#8D6E63",
+            description: `
+                - Inserción de Argentina en el mercado mundial como exportador de materias primas.
+                - Expansión ganadera y agrícola en la pampa húmeda.
+                - Dependencia del capital y mercados externos.
+            `,
+        },
+        {
             title: "Consolidación del Estado nacional",
             start: utcDate(1880, 1, 1),
             end: utcDate(1900, 1, 1),
@@ -102,6 +113,29 @@ export const timelineHistoriaArgentina: Timeline = {
                 - Consolidación del modelo agroexportador.
             `,
         },
+        {
+            title: "Régimen oligárquico",
+            start: utcDate(1880, 1, 1),
+            end: utcDate(1916, 1, 1),
+            color: "#343A40",
+            description: `
+                - Dominio político de la élite terrateniente.
+                - Sistema electoral restringido y fraudulento.
+                - Estado funcional al modelo agroexportador.
+            `,
+        },
+        {
+            title: "Inmigración masiva y transformación social",
+            start: utcDate(1880, 1, 1),
+            end: utcDate(1914, 7, 28),
+            color: "#5F9EA0",
+            description: `
+                - Llegada masiva de inmigrantes europeos.
+                - Rápida urbanización y crecimiento de Buenos Aires.
+                - Formación de una clase trabajadora.
+                - Cambios culturales y sociales profundos.
+            `,
+        }
     ],
 
     events: [
@@ -201,5 +235,45 @@ export const timelineHistoriaArgentina: Timeline = {
             date: utcDate(1860, 10, 1),
             links: ["https://es.wikipedia.org/wiki/Pacto_de_San_Jos%C3%A9_de_Flores"],
         },
+        {
+            title: "Campaña del Desierto",
+            description: `
+                - Expansión militar sobre territorios indígenas en la Patagonia.
+                - Incorporación de tierras al circuito productivo.
+                - Base territorial del modelo agroexportador.
+            `,
+            date: utcDate(1879, 1, 1),
+            links: ["https://es.wikipedia.org/wiki/Conquista_del_Desierto"],
+        },
+        {
+            title: "Federalización de Buenos Aires",
+            description: `
+                - Buenos Aires se convierte en capital federal.
+                - Resolución del conflicto entre Nación y provincia.
+                - Consolidación del poder del Estado nacional.
+            `,
+            date: utcDate(1880, 9, 21),
+            links: ["https://es.wikipedia.org/wiki/Federalizaci%C3%B3n_de_Buenos_Aires"],
+        },
+        {
+            title: "Ley Sáenz Peña",
+            description: `
+                - Establece el voto secreto, obligatorio y universal (masculino).
+                - Reduce el fraude electoral.
+                - Abre el sistema político a nuevos sectores.
+            `,
+            date: utcDate(1912, 2, 10),
+            links: ["https://es.wikipedia.org/wiki/Ley_S%C3%A1enz_Pe%C3%B1a"],
+        },
+        {
+            title: "Elección de Yrigoyen",
+            description: `
+                - Primera elección presidencial bajo la Ley Sáenz Peña.
+                - Triunfo de la Unión Cívica Radical.
+                - Fin del orden oligárquico clásico.
+            `,
+            date: utcDate(1916, 4, 2),
+            links: ["https://es.wikipedia.org/wiki/Hip%C3%B3lito_Yrigoyen"],
+        }
     ],
 };
