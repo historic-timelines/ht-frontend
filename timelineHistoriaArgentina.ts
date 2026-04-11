@@ -23,7 +23,7 @@ export const timelineHistoriaArgentina: Timeline = {
         {
             title: "Orden Rosista",
             start: utcDate(1829, 12, 8),
-            end: utcDate(1835, 4, 13),
+            end: utcDate(1852, 4, 13),
             description: `
                 - Gobierno de facto de Juan Manuel de Rosas.
                 - Centralización sin Estado nacional formal.

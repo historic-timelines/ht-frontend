@@ -22,22 +22,6 @@ function pct(time: number, min: number, max: number): number {
   return ((time - min) / (max - min)) * 100;
 }
 
-function yearTicks(min: number, max: number): number[] {
-  const y0 = new Date(min).getUTCFullYear();
-  const y1 = new Date(max).getUTCFullYear();
-  const step = y1 - y0 > 80 ? 20 : 10;
-  const start = Math.floor(y0 / step) * step;
-  const out: number[] = [];
-  for (let y = start; y <= y1 + step; y += step) {
-    const t = Date.UTC(y, 0, 1, 12, 0, 0);
-    if (t >= min && t <= max) out.push(t);
-  }
-  if (out.length < 2) {
-    return [min, max];
-  }
-  return out;
-}
-
 export default function App() {
   const { periods, events } = timelineHistoriaArgentina;
 
@@ -52,7 +36,11 @@ export default function App() {
     return { min: Math.min(...times), max: Math.max(...times) };
   }, [periods, events]);
 
-  const ticks = useMemo(() => yearTicks(min, max), [min, max]);
+  const eventsSorted = useMemo(
+    () => [...events].sort((a, b) => a.date.getTime() - b.date.getTime()),
+    [events]
+  );
+
   const [sel, setSel] = useState<Selection>(null);
 
   return (
@@ -68,78 +56,87 @@ export default function App() {
       </div>
 
       <section className="chart chart-bleed" aria-label="Línea de tiempo">
-        <div className="axis">
-          {ticks.map((t, i) => {
-            const isFirst = i === 0;
-            const isLast = i === ticks.length - 1;
-            const p = pct(t, min, max);
-            let edgeClass = "";
-            if (isFirst && isLast) {
-              if (p <= 6) edgeClass = "tick--start";
-              else if (p >= 94) edgeClass = "tick--end";
-            } else if (isFirst) {
-              edgeClass = "tick--start";
-            } else if (isLast) {
-              edgeClass = "tick--end";
-            }
-            return (
-              <div
-                key={t}
-                className={`tick ${edgeClass}`.trim()}
-                style={{ left: `${p}%` }}
-              >
-                <span className="tick-line" />
-                <span className="tick-label">
-                  {new Date(t).getUTCFullYear()}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="track-wrap">
-          <div className="track-bg" />
-          {periods.map((p, i) => {
-            const left = pct(p.start.getTime(), min, max);
-            const width = Math.max(
-              pct(p.end.getTime(), min, max) - left,
-              0.8
-            );
-            const hue = i % 2 === 0 ? "period-a" : "period-b";
-            return (
-              <div key={p.title} className="period-row">
-                <div className="row-bar">
-                  <button
-                    type="button"
-                    className={`bar ${hue} ${sel?.kind === "period" && sel.item === p ? "active" : ""}`}
-                    style={{ left: `${left}%`, width: `${width}%` }}
-                    onClick={() => setSel({ kind: "period", item: p })}
-                    title={`${formatDate(p.start)} — ${formatDate(p.end)}`}
-                  >
-                    <span className="bar-text">{p.title}</span>
-                  </button>
+        <div className="timeline-stack">
+          <div className="axis">
+            {eventsSorted.map((ev, i) => {
+              const isFirst = i === 0;
+              const isLast = i === eventsSorted.length - 1;
+              const p = pct(ev.date.getTime(), min, max);
+              let edgeClass = "";
+              if (isFirst && isLast) {
+                if (p <= 6) edgeClass = "tick--start";
+                else if (p >= 94) edgeClass = "tick--end";
+              } else if (isFirst) {
+                edgeClass = "tick--start";
+              } else if (isLast) {
+                edgeClass = "tick--end";
+              }
+              return (
+                <div
+                  key={ev.title + ev.date.toISOString()}
+                  className={`tick tick--event ${edgeClass}`.trim()}
+                  style={{ left: `${p}%` }}
+                >
+                  <span className="tick-line" />
+                  <span className="tick-label">{formatDate(ev.date)}</span>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
 
-          <div className="events-row">
-            <div
-              className="row-bar"
-              role="group"
-              aria-label="Eventos en la línea temporal"
-            >
-              {events.map((e) => (
-                <button
-                  key={e.title + e.date.toISOString()}
-                  type="button"
-                  className={`event-dot ${sel?.kind === "event" && sel.item === e ? "active" : ""}`}
-                  style={{ left: `${pct(e.date.getTime(), min, max)}%` }}
-                  onClick={() => setSel({ kind: "event", item: e })}
-                  title={e.title}
-                  aria-label={e.title}
+          <div className="track-wrap">
+            <div className="track-bg" />
+            <div className="event-connectors" aria-hidden>
+              {eventsSorted.map((ev) => (
+                <div
+                  key={`conn-${ev.title + ev.date.toISOString()}`}
+                  className="event-connector"
+                  style={{ left: `${pct(ev.date.getTime(), min, max)}%` }}
                 />
               ))}
+            </div>
+            {periods.map((p, i) => {
+              const left = pct(p.start.getTime(), min, max);
+              const width = Math.max(
+                pct(p.end.getTime(), min, max) - left,
+                0.8
+              );
+              const hue = i % 2 === 0 ? "period-a" : "period-b";
+              return (
+                <div key={p.title} className="period-row">
+                  <div className="row-bar">
+                    <button
+                      type="button"
+                      className={`bar ${hue} ${sel?.kind === "period" && sel.item === p ? "active" : ""}`}
+                      style={{ left: `${left}%`, width: `${width}%` }}
+                      onClick={() => setSel({ kind: "period", item: p })}
+                      title={`${formatDate(p.start)} — ${formatDate(p.end)}`}
+                    >
+                      <span className="bar-text">{p.title}</span>
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+
+              <div className="events-row">
+              <div
+                className="row-bar"
+                role="group"
+                aria-label="Eventos en la línea temporal"
+              >
+                {events.map((e) => (
+                  <button
+                    key={e.title + e.date.toISOString()}
+                    type="button"
+                    className={`event-dot ${sel?.kind === "event" && sel.item === e ? "active" : ""}`}
+                    style={{ left: `${pct(e.date.getTime(), min, max)}%` }}
+                    onClick={() => setSel({ kind: "event", item: e })}
+                    title={e.title}
+                    aria-label={e.title}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </div>
