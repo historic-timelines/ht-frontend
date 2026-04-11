@@ -22,6 +22,41 @@ function pct(time: number, min: number, max: number): number {
   return ((time - min) / (max - min)) * 100;
 }
 
+/** Debe coincidir con altura de `.row-bar` y `margin-bottom` de `.period-row` en App.css */
+const ROW_BAR_REM = 2.25;
+const ROW_MARGIN_REM = 0.1;
+
+function periodRowCenterFromTopRem(rowIndex: number): number {
+  return rowIndex * (ROW_BAR_REM + ROW_MARGIN_REM) + ROW_BAR_REM / 2;
+}
+
+function mergeAxisMarks(
+  periods: { start: Date; end: Date }[],
+  events: { date: Date }[]
+): { t: number; label: string }[] {
+  const raw: { t: number; label: string }[] = [];
+  for (const p of periods) {
+    raw.push({ t: p.start.getTime(), label: formatDate(p.start) });
+    raw.push({ t: p.end.getTime(), label: formatDate(p.end) });
+  }
+  for (const e of events) {
+    raw.push({ t: e.date.getTime(), label: formatDate(e.date) });
+  }
+  raw.sort((a, b) => a.t - b.t);
+  const out: { t: number; label: string }[] = [];
+  for (const item of raw) {
+    const prev = out[out.length - 1];
+    if (prev && prev.t === item.t) {
+      if (prev.label !== item.label) {
+        prev.label = `${prev.label} · ${item.label}`;
+      }
+    } else {
+      out.push({ ...item });
+    }
+  }
+  return out;
+}
+
 export default function App() {
   const { periods, events } = timelineHistoriaArgentina;
 
@@ -41,6 +76,11 @@ export default function App() {
     [events]
   );
 
+  const axisMarks = useMemo(
+    () => mergeAxisMarks(periods, events),
+    [periods, events]
+  );
+
   const [sel, setSel] = useState<Selection>(null);
 
   return (
@@ -58,10 +98,10 @@ export default function App() {
       <section className="chart chart-bleed" aria-label="Línea de tiempo">
         <div className="timeline-stack">
           <div className="axis">
-            {eventsSorted.map((ev, i) => {
+            {axisMarks.map((mark, i) => {
               const isFirst = i === 0;
-              const isLast = i === eventsSorted.length - 1;
-              const p = pct(ev.date.getTime(), min, max);
+              const isLast = i === axisMarks.length - 1;
+              const p = pct(mark.t, min, max);
               let edgeClass = "";
               if (isFirst && isLast) {
                 if (p <= 6) edgeClass = "tick--start";
@@ -73,12 +113,12 @@ export default function App() {
               }
               return (
                 <div
-                  key={ev.title + ev.date.toISOString()}
-                  className={`tick tick--event ${edgeClass}`.trim()}
+                  key={`${mark.t}-${i}`}
+                  className={`tick tick--axis-mark ${edgeClass}`.trim()}
                   style={{ left: `${p}%` }}
                 >
                   <span className="tick-line" />
-                  <span className="tick-label">{formatDate(ev.date)}</span>
+                  <span className="tick-label">{mark.label}</span>
                 </div>
               );
             })}
@@ -86,6 +126,32 @@ export default function App() {
 
           <div className="track-wrap">
             <div className="track-bg" />
+            <div className="period-connectors" aria-hidden>
+              {periods.flatMap((p, i) => {
+                const centerRem = periodRowCenterFromTopRem(i);
+                const h = `calc(var(--timeline-axis-gap) + ${centerRem}rem)`;
+                const startLeft = pct(p.start.getTime(), min, max);
+                const endLeft = pct(p.end.getTime(), min, max);
+                return [
+                  <div
+                    key={`${p.title}-start-conn`}
+                    className="period-connector"
+                    style={{
+                      left: `${startLeft}%`,
+                      height: h,
+                    }}
+                  />,
+                  <div
+                    key={`${p.title}-end-conn`}
+                    className="period-connector"
+                    style={{
+                      left: `${endLeft}%`,
+                      height: h,
+                    }}
+                  />,
+                ];
+              })}
+            </div>
             <div className="event-connectors" aria-hidden>
               {eventsSorted.map((ev) => (
                 <div
@@ -119,7 +185,7 @@ export default function App() {
               );
             })}
 
-              <div className="events-row">
+            <div className="events-row">
               <div
                 className="row-bar"
                 role="group"

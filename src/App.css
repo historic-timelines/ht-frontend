@@ -132,7 +132,7 @@
   white-space: nowrap;
 }
 
-.tick--event .tick-label {
+.tick--axis-mark .tick-label {
   font-size: 0.65rem;
   max-width: 4.25rem;
   line-height: 1.15;
@@ -144,24 +144,42 @@
   position: relative;
 }
 
+.period-connectors,
 .event-connectors {
   position: absolute;
   left: 0;
   right: 0;
-  top: calc(-1 * var(--timeline-axis-gap));
-  bottom: 1.125rem;
   pointer-events: none;
   z-index: 1;
 }
 
-.event-connector {
+.period-connectors {
+  inset: 0;
+}
+
+.event-connectors {
+  top: calc(-1 * var(--timeline-axis-gap));
+  bottom: 1.125rem;
+}
+
+.event-connector,
+.period-connector {
   position: absolute;
-  top: 0;
-  bottom: 0;
   width: 0;
   transform: translateX(-50%);
   border-left: 1px dashed color-mix(in srgb, var(--muted) 75%, transparent);
+}
+
+.event-connector {
+  top: 0;
+  bottom: 0;
   opacity: 0.55;
+}
+
+.period-connector {
+  top: calc(-1 * var(--timeline-axis-gap));
+  bottom: auto;
+  opacity: 0.42;
 }
 
 .track-bg {
