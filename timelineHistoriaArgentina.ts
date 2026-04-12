@@ -102,6 +102,18 @@ export const timelineHistoriaArgentina: Timeline = {
             `,
         },
         {
+            title: "Expansión y control territorial del Estado",
+            start: utcDate(1865, 1, 1),
+            end: utcDate(1884, 1, 1),
+            color: "#A47148",
+            description: `
+                - Construcción del monopolio de la violencia estatal.
+                - Expansión sobre territorios indígenas (sur y norte).
+                - Definición de fronteras internas y externas.
+                - Condición material para el modelo agroexportador.
+            `,
+        },
+        {
             title: "Consolidación del Estado nacional",
             start: utcDate(1880, 1, 1),
             end: utcDate(1900, 1, 1),
@@ -185,6 +197,27 @@ export const timelineHistoriaArgentina: Timeline = {
             links: ["https://es.wikipedia.org/wiki/Juan_Manuel_de_Rosas"],
         },
         {
+            title: "Vuelta de Obligado",
+            description: `
+                - Enfrentamiento contra la flota anglo-francesa en el río Paraná.
+                - Defensa de la soberanía sobre los ríos interiores.
+                - Aunque es derrota militar, fortalece la posición diplomática argentina.
+            `,
+            date: utcDate(1845, 11, 20),
+            links: ["https://es.wikipedia.org/wiki/Batalla_de_la_Vuelta_de_Obligado"],
+        },
+        {
+            title: "Tratados que ponen fin a los bloqueos anglo-franceses",
+            description: `
+                - Acuerdos con Francia e Inglaterra que reconocen la soberanía argentina sobre los ríos.
+                - Fin de la intervención directa de potencias extranjeras.
+                - Consolidación de la autonomía en política exterior.
+            `,
+            date: utcDate(1850, 1, 1),
+            links: ["https://es.wikipedia.org/wiki/Bloqueo_anglo-franc%C3%A9s_del_R%C3%ADo_de_la_Plata"],
+        },
+
+        {
             title: "Batalla de Caseros",
             description: `
                 - Derrota de Rosas frente a las fuerzas de Urquiza.
@@ -236,10 +269,30 @@ export const timelineHistoriaArgentina: Timeline = {
             links: ["https://es.wikipedia.org/wiki/Pacto_de_San_Jos%C3%A9_de_Flores"],
         },
         {
+            title: "Guerra del Paraguay",
+            description: `
+                - Conflicto regional que consolida el rol militar del Estado argentino.
+                - Fortalece al ejército nacional.
+                - Afianza la inserción de Argentina en el sistema regional.
+            `,
+            date: utcDate(1865, 5, 1),
+            links: ["https://es.wikipedia.org/wiki/Guerra_de_la_Triple_Alianza"],
+        },
+        {
+            title: "Zanja de Alsina",
+            description: `
+                - Sistema defensivo para contener el avance indígena en la frontera sur.
+                - Primer intento sistemático de control territorial estatal.
+                - Preludio de la Campaña del Desierto.
+            `,
+            date: utcDate(1876, 1, 1),
+            links: ["https://es.wikipedia.org/wiki/Zanja_de_Alsina"],
+        },
+        {
             title: "Campaña del Desierto",
             description: `
-                - Expansión militar sobre territorios indígenas en la Patagonia.
-                - Incorporación de tierras al circuito productivo.
+                - Campaña militar liderada por Roca para ocupar territorios indígenas.
+                - Incorporación efectiva de la Patagonia al Estado nacional.
                 - Base territorial del modelo agroexportador.
             `,
             date: utcDate(1879, 1, 1),
@@ -254,6 +307,16 @@ export const timelineHistoriaArgentina: Timeline = {
             `,
             date: utcDate(1880, 9, 21),
             links: ["https://es.wikipedia.org/wiki/Federalizaci%C3%B3n_de_Buenos_Aires"],
+        },
+        {
+            title: "Conquista del Chaco",
+            description: `
+                - Avance militar sobre territorios del norte (Gran Chaco).
+                - Completa el control territorial interno del Estado.
+                - Integra regiones periféricas al orden nacional.
+            `,
+            date: utcDate(1884, 1, 1),
+            links: ["https://es.wikipedia.org/wiki/Conquista_del_Chaco"],
         },
         {
             title: "Ley Sáenz Peña",
