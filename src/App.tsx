@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -192,8 +193,48 @@ function mergeAxisMarks(
   return out;
 }
 
+/** Zoom horizontal del timeline (Ctrl + rueda). 1 = ancho base en CSS. */
+const TIMELINE_ZOOM_MIN = 0.35;
+const TIMELINE_ZOOM_MAX = 14;
+const TIMELINE_ZOOM_STEP = 1.085;
+
+/** Ancho visual de la barra de escala (px); el texto indica el lapso temporal que cubre. */
+const SCALE_BAR_PX = 112;
+
 /** Separación mínima entre centros de etiquetas (% del ancho de la pista) para compartir la misma fila. */
 const AXIS_LABEL_MIN_GAP_PCT = 3.1;
+
+function clamp(n: number, lo: number, hi: number): number {
+  return Math.min(hi, Math.max(lo, n));
+}
+
+/** Lapso aproximado representado por `ms`, para la leyenda tipo mapa (es-AR). */
+function formatApproxTimeSpan(ms: number): string {
+  if (!Number.isFinite(ms) || ms <= 0) return "—";
+  const day = 86_400_000;
+  const year = 365.25 * day;
+  const month = year / 12;
+  if (ms >= year) {
+    const y = ms / year;
+    if (y >= 10) return `≈ ${Math.round(y)} años`;
+    const rounded = y >= 2 ? Math.round(y) : Math.round(y * 10) / 10;
+    const unit = rounded === 1 ? "año" : "años";
+    return `≈ ${String(rounded).replace(".", ",")} ${unit}`;
+  }
+  if (ms >= month * 1.5) {
+    const m = ms / month;
+    const rounded = Math.max(1, Math.round(m));
+    return `≈ ${rounded} ${rounded === 1 ? "mes" : "meses"}`;
+  }
+  if (ms >= day) {
+    const d = ms / day;
+    const rounded = Math.max(1, Math.round(d));
+    return `≈ ${rounded} ${rounded === 1 ? "día" : "días"}`;
+  }
+  const h = ms / 3_600_000;
+  const rounded = Math.max(1, Math.round(h));
+  return `≈ ${rounded} ${rounded === 1 ? "hora" : "horas"}`;
+}
 
 /**
  * Cuando muchas fechas caen cerca en el eje, reparte etiquetas en filas verticales
@@ -273,8 +314,85 @@ export default function App() {
   }, [periods]);
 
   const [sel, setSel] = useState<Selection>(null);
+  const [timelineZoom, setTimelineZoom] = useState(1);
+  const [stackWidthPx, setStackWidthPx] = useState<number | null>(null);
 
   const timelineScrollRef = useRef<HTMLDivElement>(null);
+  const timelineStackRef = useRef<HTMLDivElement>(null);
+  const pendingZoomAnchorRef = useRef<{
+    frac: number;
+    viewportX: number;
+  } | null>(null);
+
+  const rangeMs = max - min;
+
+  const scaleBarLabel = useMemo(() => {
+    if (stackWidthPx == null || stackWidthPx <= 0 || rangeMs <= 0) return "—";
+    const msForBar = (rangeMs / stackWidthPx) * SCALE_BAR_PX;
+    return formatApproxTimeSpan(msForBar);
+  }, [stackWidthPx, rangeMs]);
+
+  useEffect(() => {
+    const el = timelineStackRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => {
+      setStackWidthPx(el.offsetWidth);
+    });
+    ro.observe(el);
+    setStackWidthPx(el.offsetWidth);
+    return () => ro.disconnect();
+  }, [timelineZoom]);
+
+  useLayoutEffect(() => {
+    const pending = pendingZoomAnchorRef.current;
+    const scrollEl = timelineScrollRef.current;
+    if (!pending || !scrollEl) return;
+    pendingZoomAnchorRef.current = null;
+    const sw = scrollEl.scrollWidth;
+    if (sw <= 0) return;
+    const nextLeft = pending.frac * sw - pending.viewportX;
+    scrollEl.scrollLeft = clamp(
+      nextLeft,
+      0,
+      Math.max(0, sw - scrollEl.clientWidth)
+    );
+  }, [timelineZoom]);
+
+  const onTimelineWheelRef = useRef<(e: WheelEvent) => void>(() => {});
+  onTimelineWheelRef.current = (e: WheelEvent) => {
+    if (!(e.ctrlKey || e.metaKey)) return;
+    e.preventDefault();
+    const scrollEl = timelineScrollRef.current;
+    if (!scrollEl) return;
+
+    let dy = e.deltaY;
+    if (e.deltaMode === 1) dy *= 16;
+    else if (e.deltaMode === 2) dy *= scrollEl.clientHeight;
+
+    const direction = dy < 0 ? 1 : -1;
+    const steps = clamp(Math.abs(dy) / 100, 0.35, 4);
+    const factor = Math.pow(TIMELINE_ZOOM_STEP, direction * steps);
+
+    setTimelineZoom((z0) => {
+      const z1 = clamp(z0 * factor, TIMELINE_ZOOM_MIN, TIMELINE_ZOOM_MAX);
+      if (Math.abs(z1 - z0) < 1e-9) return z0;
+
+      const rect = scrollEl.getBoundingClientRect();
+      const viewportX = e.clientX - rect.left;
+      const frac =
+        (viewportX + scrollEl.scrollLeft) / Math.max(1, scrollEl.scrollWidth);
+      pendingZoomAnchorRef.current = { frac, viewportX };
+      return z1;
+    });
+  };
+
+  useEffect(() => {
+    const scrollEl = timelineScrollRef.current;
+    if (!scrollEl) return;
+    const handler = (ev: WheelEvent) => onTimelineWheelRef.current(ev);
+    scrollEl.addEventListener("wheel", handler, { passive: false });
+    return () => scrollEl.removeEventListener("wheel", handler);
+  }, []);
 
   const onTimelinePointerDown = useCallback(
     (e: ReactPointerEvent<HTMLDivElement>) => {
@@ -437,10 +555,22 @@ export default function App() {
                     <kbd className="kbd">J</kbd>
                   </span>
                 </li>
+                <li className="keyboard-cheatsheet-row">
+                  <span className="keyboard-cheatsheet-label">
+                    Ampliar o reducir la escala del eje (sobre la línea de tiempo)
+                  </span>
+                  <span className="keyboard-cheatsheet-keys">
+                    <kbd className="kbd">Ctrl</kbd>
+                    <span className="keyboard-cheatsheet-slash">+</span>
+                    <kbd className="kbd">rueda</kbd>
+                  </span>
+                </li>
               </ul>
               <p className="keyboard-cheatsheet-note">
-                No aplican con Ctrl, Alt ni Meta; se ignoran si estás escribiendo
-                en un campo de texto.
+                Los atajos de flechas y letras no aplican con Ctrl, Alt ni Meta
+                (salvo Ctrl + rueda en la línea de tiempo; en macOS también
+                funciona Cmd + rueda); se ignoran si estás escribiendo en un
+                campo de texto.
               </p>
             </section>
           </div>
@@ -453,7 +583,15 @@ export default function App() {
           className="timeline-scroll"
           onPointerDown={onTimelinePointerDown}
         >
-          <div className="timeline-stack">
+          <div
+            ref={timelineStackRef}
+            className="timeline-stack"
+            style={
+              {
+                "--timeline-zoom": String(timelineZoom),
+              } as CSSProperties
+            }
+          >
             <div
               className="axis"
               style={
@@ -591,6 +729,23 @@ export default function App() {
               </div>
             </div>
           </div>
+        </div>
+
+        <div className="timeline-scale-overlay" aria-hidden>
+          <span className="timeline-scale-caption">Escala del eje</span>
+          <div className="timeline-scale-rail-wrap">
+            <div
+              className="timeline-scale-rail"
+              style={{ width: SCALE_BAR_PX }}
+            />
+            <div className="timeline-scale-ticks" style={{ width: SCALE_BAR_PX }}>
+              <span />
+              <span />
+              <span />
+              <span />
+            </div>
+          </div>
+          <div className="timeline-scale-label">{scaleBarLabel}</div>
         </div>
       </section>
 

@@ -174,6 +174,7 @@
 }
 
 .chart-bleed {
+  position: relative;
   width: 100vw;
   margin-left: calc(50% - 50vw);
   border-radius: 0;
@@ -207,7 +208,76 @@
 .timeline-stack {
   --timeline-axis-gap: 0.85rem;
   /* Más ancho que el viewport: los ticks se separan y se recorre con scroll horizontal */
-  min-width: max(100%, min(4200px, 240vw));
+  min-width: calc(max(100%, min(4200px, 240vw)) * var(--timeline-zoom, 1));
+}
+
+/* Escala tipo “barra de escala” de mapa (solo lectura visual) */
+.timeline-scale-overlay {
+  position: absolute;
+  right: clamp(0.65rem, 2vw, 1.35rem);
+  bottom: 0.45rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.3rem;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.timeline-scale-caption {
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  opacity: 0.92;
+}
+
+.timeline-scale-rail-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
+}
+
+.timeline-scale-rail {
+  height: 7px;
+  border-radius: 2px;
+  border: 1px solid color-mix(in srgb, var(--text) 78%, var(--border));
+  background: repeating-linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--text) 88%, transparent) 0 5px,
+    color-mix(in srgb, var(--surface) 92%, var(--text) 8%) 5px 10px
+  );
+  box-shadow:
+    0 1px 0 color-mix(in srgb, var(--text) 12%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--surface) 35%, transparent);
+}
+
+.timeline-scale-ticks {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 1px;
+}
+
+.timeline-scale-ticks span {
+  width: 1px;
+  height: 5px;
+  background: color-mix(in srgb, var(--text) 55%, transparent);
+  border-radius: 1px;
+}
+
+.timeline-scale-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  text-align: right;
+  max-width: 12rem;
+  line-height: 1.25;
+  text-shadow:
+    0 0 8px var(--surface),
+    0 0 4px var(--surface);
 }
 
 .axis {
