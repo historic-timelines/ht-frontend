@@ -469,6 +469,35 @@
   text-align: center;
 }
 
+/* Línea punteada desde la fecha hasta el trazo / barra del eje */
+.tick--axis-mark .tick-label::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: calc(
+    var(--tick-line-h, 12px) + 4px + var(--tick-lane, 0) * var(--axis-lane-step, 2.42em)
+  );
+  border-left: 1px dashed color-mix(in srgb, var(--muted) 75%, transparent);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.tick--axis-mark.tick--start .tick-label::after {
+  left: 0;
+  transform: none;
+}
+
+.tick--axis-mark.tick--end .tick-label::after {
+  left: auto;
+  right: 0;
+  transform: none;
+  border-left: none;
+  border-right: 1px dashed color-mix(in srgb, var(--muted) 75%, transparent);
+}
+
 .tick-label-year {
   font-size: 0.68rem;
   font-weight: 600;
@@ -552,10 +581,12 @@
   inset: 0;
 }
 
-/* No cubrir el padding inferior de la fila de eventos (etiquetas): si no, el trazo llega hasta abajo */
+/* Termina el trazo en el borde inferior del contenido de la fila (encima del padding reservado
+   para etiquetas rotadas). El punto está en esa franja; antes sumábamos media altura y el trazo
+   quedaba corto ~1.25rem por encima del punto y del título. */
 .event-connectors {
   top: calc(-1 * var(--timeline-axis-gap));
-  bottom: calc(var(--timeline-event-label-room, 7.25rem) + 1.125rem);
+  bottom: var(--timeline-event-label-room, 7.25rem);
 }
 
 .event-connector,
@@ -666,14 +697,18 @@
   display: block;
 }
 
-/* Ancla en la fecha (centro vertical de la fila); el botón queda centrado en ese punto */
+/* Ancla en la fecha: mitad de la franja útil de la fila (no del padding de etiquetas) */
 .event-marker {
   position: absolute;
-  top: 50%;
   width: 0;
   height: 0;
   transform: translateX(-50%);
   pointer-events: none;
+}
+
+.events-row .event-marker {
+  /* Alineado con .events-row .row-bar min-height (max(2.25rem, --touch-target-min)) */
+  top: calc(max(2.25rem, var(--touch-target-min, 44px)) / 2);
 }
 
 /* Área táctil amplia; el círculo visible es ::after (14px) */
