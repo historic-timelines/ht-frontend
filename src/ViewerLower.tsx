@@ -15,10 +15,18 @@ function formatDate(d: Date): string {
   });
 }
 
+type EventNav = {
+  onStep: (delta: -1 | 1) => void;
+  canPrev: boolean;
+  canNext: boolean;
+};
+
 type ViewerLowerProps = {
   periods: Period[];
   events: TimelineEvent[];
   sel: Selection;
+  activePeriodForTimeline: Period | null;
+  eventNav: EventNav | null;
   onSelectPeriod: (p: Period) => void;
   onSelectEvent: (e: TimelineEvent) => void;
 };
@@ -27,6 +35,8 @@ export function ViewerLower({
   periods,
   events,
   sel,
+  activePeriodForTimeline,
+  eventNav,
   onSelectPeriod,
   onSelectEvent,
 }: ViewerLowerProps) {
@@ -58,20 +68,21 @@ export function ViewerLower({
           <div className="viewer-lower-scroll-block">
             <ul className="period-list">
               {periods.map((p) => {
-                const periodSelected = sel?.kind === "period" && sel.item === p;
+                const periodExplicit = sel?.kind === "period" && sel.item === p;
+                const periodHighlighted = activePeriodForTimeline === p;
                 return (
                 <li key={p.title}>
                   <button
                     type="button"
-                    className={`linkish period-link${periodSelected ? " linkish--selected" : ""}`}
-                    aria-current={periodSelected ? "true" : undefined}
+                    className={`linkish period-link${periodHighlighted ? " linkish--selected" : ""}`}
+                    aria-current={periodExplicit ? "true" : undefined}
                     style={
-                      periodSelected
+                      periodHighlighted
                         ? ({ "--sel-accent": p.color } as CSSProperties)
                         : undefined
                     }
                     ref={(el) => {
-                      if (periodSelected) {
+                      if (periodExplicit) {
                         periodListSelectedRef.current = el;
                       } else if (periodListSelectedRef.current === el) {
                         periodListSelectedRef.current = null;
@@ -84,11 +95,10 @@ export function ViewerLower({
                       style={{ backgroundColor: p.color }}
                       aria-hidden
                     />
-                    <span>
+                    <span className="period-link__text">
                       <strong>{p.title}</strong>
-                      <span className="muted">
-                        {" "}
-                        · {formatDate(p.start)} — {formatDate(p.end)}
+                      <span className="muted period-link__dates">
+                        {formatDate(p.start)} — {formatDate(p.end)}
                       </span>
                     </span>
                   </button>
@@ -117,8 +127,12 @@ export function ViewerLower({
                     }}
                     onClick={() => onSelectEvent(e)}
                   >
-                    <strong>{e.title}</strong>
-                    <span className="muted"> · {formatDate(e.date)}</span>
+                    <span className="event-link__text">
+                      <strong>{e.title}</strong>
+                      <span className="muted event-link__date">
+                        {formatDate(e.date)}
+                      </span>
+                    </span>
                   </button>
                 </li>
               );
@@ -129,11 +143,13 @@ export function ViewerLower({
       </div>
       <div className="viewer-lower-col viewer-lower-col--detail">
         <aside
-          className="detail viewer-lower-detail"
+          className={`detail viewer-lower-detail${
+            activePeriodForTimeline ? " viewer-lower-detail--period" : ""
+          }`.trim()}
           aria-live="polite"
           style={
-            sel?.kind === "period"
-              ? { boxShadow: `inset 4px 0 0 0 ${sel.item.color}` }
+            activePeriodForTimeline
+              ? ({ "--period-accent": activePeriodForTimeline.color } as CSSProperties)
               : undefined
           }
         >
@@ -151,6 +167,32 @@ export function ViewerLower({
             </>
           ) : (
             <>
+              {eventNav ? (
+                <div
+                  className="event-nav"
+                  role="group"
+                  aria-label="Navegación entre eventos"
+                >
+                  <button
+                    type="button"
+                    className="event-nav-btn"
+                    disabled={!eventNav.canPrev}
+                    onClick={() => eventNav.onStep(-1)}
+                    aria-label="Ir al evento anterior"
+                  >
+                    Anterior
+                  </button>
+                  <button
+                    type="button"
+                    className="event-nav-btn"
+                    disabled={!eventNav.canNext}
+                    onClick={() => eventNav.onStep(1)}
+                    aria-label="Ir al evento siguiente"
+                  >
+                    Siguiente
+                  </button>
+                </div>
+              ) : null}
               <h2 className="detail-title">{sel.item.title}</h2>
               <p className="detail-meta">{formatDate(sel.item.date)}</p>
               <pre className="detail-body">{sel.item.description.trim()}</pre>

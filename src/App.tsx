@@ -65,6 +65,18 @@ function pctOnTrack(time: number, min: number, max: number): number {
 }
 
 /** Texto legible sobre un fondo en hex (#rgb o #rrggbb). */
+/** Primer período en orden de datos cuya ventana incluye la fecha del evento (inclusive). */
+function firstPeriodContainingDate(
+  periods: Period[],
+  date: Date
+): Period | null {
+  const t = date.getTime();
+  for (const p of periods) {
+    if (t >= p.start.getTime() && t <= p.end.getTime()) return p;
+  }
+  return null;
+}
+
 function foregroundForHex(hex: string): string {
   const raw = hex.trim().replace(/^#/, "");
   if (raw.length !== 3 && raw.length !== 6) return "var(--text)";
@@ -568,6 +580,31 @@ export default function App() {
     () =>
       typeof window !== "undefined" &&
       window.matchMedia("(pointer: coarse)").matches
+  );
+
+  const activePeriodForTimeline = useMemo((): Period | null => {
+    if (sel == null) return null;
+    if (sel.kind === "period") return sel.item;
+    return firstPeriodContainingDate(periods, sel.item.date);
+  }, [sel, periods]);
+
+  const selectedEventChronoIndex = useMemo(() => {
+    if (sel?.kind !== "event") return -1;
+    return eventsSorted.indexOf(sel.item);
+  }, [sel, eventsSorted]);
+
+  const stepEvent = useCallback(
+    (delta: -1 | 1) => {
+      setSel((cur) => {
+        if (cur?.kind !== "event") return cur;
+        const idx = eventsSorted.indexOf(cur.item);
+        if (idx < 0) return cur;
+        const nextIdx = idx + delta;
+        if (nextIdx < 0 || nextIdx >= eventsSorted.length) return cur;
+        return { kind: "event", item: eventsSorted[nextIdx]! };
+      });
+    },
+    [eventsSorted]
   );
 
   const timelineScrollRef = useRef<HTMLDivElement>(null);
@@ -1176,7 +1213,7 @@ export default function App() {
                         pctOnTrack(p.end.getTime(), min, max) - left,
                         0.8
                       );
-                      const isActive = sel?.kind === "period" && sel.item === p;
+                      const isActive = activePeriodForTimeline === p;
                       return (
                         <button
                           key={p.title}
@@ -1387,6 +1424,18 @@ export default function App() {
           periods={periods}
           events={events}
           sel={sel}
+          activePeriodForTimeline={activePeriodForTimeline}
+          eventNav={
+            sel?.kind === "event"
+              ? {
+                  onStep: stepEvent,
+                  canPrev: selectedEventChronoIndex > 0,
+                  canNext:
+                    selectedEventChronoIndex >= 0 &&
+                    selectedEventChronoIndex < eventsSorted.length - 1,
+                }
+              : null
+          }
           onSelectPeriod={(p) => setSel({ kind: "period", item: p })}
           onSelectEvent={(e) => setSel({ kind: "event", item: e })}
         />

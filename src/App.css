@@ -276,7 +276,7 @@
   right: 0;
   bottom: auto;
   flex-shrink: 0;
-  margin-top: 0.22rem;
+  margin-top: 0.08rem;
   width: 100%;
   max-width: 100%;
   display: grid;
@@ -340,7 +340,8 @@
 }
 
 .viewer-shell--has-selection .chart.chart-bleed.chart--viewer {
-  padding-bottom: 0.55rem;
+  padding-bottom: 0.35rem;
+  padding-top: 0.35rem;
 }
 
 .viewer-chart-wrap {
@@ -1121,7 +1122,7 @@
     var(--tick-line-h, 12px) + 4px + var(--tick-lane, 0) * var(--axis-lane-step, 2.42em)
   );
   border-left: 1px dashed color-mix(in srgb, var(--muted) 75%, transparent);
-  opacity: 0.55;
+  opacity: 0.28;
   pointer-events: none;
 }
 
@@ -1190,10 +1191,10 @@
 }
 
 .tick-line {
-  width: 2px;
-  height: 12px;
+  width: 1px;
+  height: 10px;
   background: var(--muted);
-  opacity: 0.9;
+  opacity: 0.55;
   border-radius: 1px;
 }
 
@@ -1244,13 +1245,13 @@
     var(--event-conn-end-adjust, 1rem) -
       var(--event-conn-lane, 0) * var(--event-label-lane-nudge, 0.96rem)
   );
-  opacity: 0.55;
+  opacity: 0.28;
 }
 
 .period-connector {
   top: calc(-1 * var(--timeline-axis-gap));
   bottom: auto;
-  opacity: 0.42;
+  opacity: 0.22;
 }
 
 .track-bg {
@@ -1259,7 +1260,7 @@
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(107, 163, 212, 0.04) 50%,
+    rgba(107, 163, 212, 0.02) 50%,
     transparent 100%
   );
   border-radius: 6px;
