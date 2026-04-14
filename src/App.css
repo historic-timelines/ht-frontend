@@ -509,7 +509,11 @@
   --events-row-pad-bottom: calc(
     0.42rem + var(--event-label-max-lane, 0) * var(--event-label-lane-nudge)
   );
-  /* Trazo punteado: termina en el centro vertical de la bola */
+  /* Recorte eje→bolita: del centro táctil al borde inferior del círculo visible (~14px/2) */
+  --event-dot-visible-r: 0.4375rem;
+  --event-conn-end-adjust: calc(
+    var(--touch-target-min, 44px) / 2 - var(--event-dot-visible-r)
+  );
   --event-connector-bottom-inset: calc(
     var(--events-row-pad-bottom) + var(--events-dot-half)
   );
@@ -538,6 +542,10 @@
 /* ROW_BAR_REM_COMPACT / ROW_MARGIN_REM_COMPACT en App.tsx (solo filas de período; la fila de eventos sigue abajo) */
 .timeline-stack--compact {
   --events-dot-half: calc(1.22rem / 2);
+  --event-dot-visible-r: 0.35rem;
+  --event-conn-end-adjust: calc(
+    var(--touch-target-min, 44px) / 2 - var(--event-dot-visible-r)
+  );
   --event-label-lane-nudge: 0.84rem;
   --events-row-pad-bottom: calc(
     0.32rem + var(--event-label-max-lane, 0) * var(--event-label-lane-nudge)
@@ -874,7 +882,13 @@
 .tick--axis-mark {
   display: block;
   width: 0;
-  height: 0;
+  /*
+   * height: 0 colapsaba el bloque de contención del tick: el ::after de la etiqueta podía
+   * extenderse mal hacia la pista. min-height ≈ carril + tick + ~2 líneas de texto.
+   */
+  min-height: calc(
+    var(--tick-line-h, 12px) + 4px + var(--tick-lane, 0) * var(--axis-lane-step, 2.42em) + 2.55em
+  );
   overflow: visible;
 }
 
@@ -1032,9 +1046,10 @@
 
 .event-connector {
   top: 0;
-  /* Alarga el trazo hacia bolitas en carriles inferiores (misma unidad que .event-marker top). */
+  /* Tope en el borde inferior del disco (::after 14px), no en el centro del área táctil 44px. */
   bottom: calc(
-    -1 * var(--event-conn-lane, 0) * var(--event-label-lane-nudge, 0.96rem)
+    var(--event-conn-end-adjust, 1rem) -
+      var(--event-conn-lane, 0) * var(--event-label-lane-nudge, 0.96rem)
   );
   opacity: 0.55;
 }
@@ -1067,7 +1082,8 @@
 .events-row .row-bar {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: minmax(max(2.25rem, var(--touch-target-min)), auto);
+  /* Alto fijo = 2×--events-dot-half: evita que la fila crezca y desalinee --event-connector-bottom-inset */
+  grid-template-rows: max(2.25rem, var(--touch-target-min, 44px));
   min-height: max(2.25rem, var(--touch-target-min));
   height: auto;
   padding-bottom: var(--timeline-event-label-room);
@@ -1076,6 +1092,7 @@
 
 @media (pointer: coarse) {
   .events-row .row-bar {
+    grid-template-rows: max(2.75rem, var(--touch-target-min, 44px));
     min-height: max(2.75rem, var(--touch-target-min));
   }
 }
