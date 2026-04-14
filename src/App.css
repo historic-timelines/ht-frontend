@@ -426,6 +426,13 @@
   box-sizing: border-box;
 }
 
+/* Móvil, tablet e iPad Pro en horizontal (>1024px lógico): menos aire al timeline */
+@media (max-width: 90rem) {
+  .chart-bleed {
+    padding: 0.45rem clamp(0.35rem, 1vw, 0.65rem) 0.75rem;
+  }
+}
+
 .timeline-scroll {
   overflow-x: auto;
   /* Con overflow-x distinto de visible, "visible" en Y se trata como auto y aparece barra
