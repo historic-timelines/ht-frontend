@@ -492,7 +492,7 @@
   padding-bottom: 0.85rem;
 }
 
-/* Coincide con ROW_BAR_REM_COMPACT / ROW_MARGIN_REM_COMPACT en App.tsx */
+/* ROW_BAR_REM_COMPACT / ROW_MARGIN_REM_COMPACT en App.tsx (solo filas de período; la fila de eventos sigue abajo) */
 .timeline-stack--compact {
   /* Mínimo ~1.85rem recortaba por completo las .event-label-diag (-70°); hace falta altura real */
   --timeline-event-label-room: clamp(4.75rem, 20vmin, 10rem);
@@ -514,6 +514,15 @@
   .timeline-stack--compact .row-bar {
     height: 1.32rem;
   }
+}
+
+/* Períodos: fila tan baja como la barra (sin bandas vacías entre carriles) */
+.timeline-stack--compact .period-row {
+  margin-bottom: 0;
+}
+
+.timeline-stack--compact .period-row .row-bar {
+  height: 0.62rem;
 }
 
 .timeline-stack--compact .events-row .row-bar {

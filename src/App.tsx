@@ -113,9 +113,9 @@ function isTypingTarget(target: EventTarget | null): boolean {
 /** Debe coincidir con altura de `.row-bar` y `margin-bottom` de `.period-row` en App.css */
 const ROW_BAR_REM = 2.25;
 const ROW_MARGIN_REM = 0.1;
-/** Modo compacto (lista + detalle): mismo patrón que `.timeline-stack--compact` en App.css */
-const ROW_BAR_REM_COMPACT = 1.22;
-const ROW_MARGIN_REM_COMPACT = 0.06;
+/** Modo compacto: altura de fila de período = `.timeline-stack--compact .period-row .row-bar`; margen entre filas de período = `.timeline-stack--compact .period-row` */
+const ROW_BAR_REM_COMPACT = 0.62;
+const ROW_MARGIN_REM_COMPACT = 0;
 
 function periodRowCenterFromTopRem(
   rowIndex: number,
