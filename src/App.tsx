@@ -1352,7 +1352,11 @@ export default function App() {
 
         <div className="chart-bleed-overlays">
           <div className="timeline-controls-left">
-            {sel != null ? (
+            <div
+              className="timeline-zoom-panel"
+              role="group"
+              aria-label="Navegación de eventos y magnificación del eje"
+            >
               <div
                 className="timeline-event-nav"
                 role="group"
@@ -1377,12 +1381,7 @@ export default function App() {
                   Siguiente
                 </button>
               </div>
-            ) : null}
-            <div
-              className="timeline-zoom-panel"
-              role="group"
-              aria-label="Magnificación del eje temporal"
-            >
+              <span className="timeline-zoom-sep" aria-hidden="true" />
               <span className="timeline-zoom-icon" aria-hidden>
                 <svg
                   width="15"
@@ -1497,15 +1496,6 @@ export default function App() {
           events={events}
           sel={sel}
           activePeriodForTimeline={activePeriodForTimeline}
-          eventNav={
-            sel?.kind === "event"
-              ? {
-                  onStep: stepEvent,
-                  canPrev: eventStepAvailability.canPrev,
-                  canNext: eventStepAvailability.canNext,
-                }
-              : null
-          }
           onSelectPeriod={(p) => setSel({ kind: "period", item: p })}
           onSelectEvent={(e) => setSel({ kind: "event", item: e })}
         />

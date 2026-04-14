@@ -15,18 +15,11 @@ function formatDate(d: Date): string {
   });
 }
 
-type EventNav = {
-  onStep: (delta: -1 | 1) => void;
-  canPrev: boolean;
-  canNext: boolean;
-};
-
 type ViewerLowerProps = {
   periods: Period[];
   events: TimelineEvent[];
   sel: Selection;
   activePeriodForTimeline: Period | null;
-  eventNav: EventNav | null;
   onSelectPeriod: (p: Period) => void;
   onSelectEvent: (e: TimelineEvent) => void;
 };
@@ -36,7 +29,6 @@ export function ViewerLower({
   events,
   sel,
   activePeriodForTimeline,
-  eventNav,
   onSelectPeriod,
   onSelectEvent,
 }: ViewerLowerProps) {
@@ -171,32 +163,6 @@ export function ViewerLower({
             </>
           ) : (
             <>
-              {eventNav ? (
-                <div
-                  className="event-nav"
-                  role="group"
-                  aria-label="Navegación entre eventos"
-                >
-                  <button
-                    type="button"
-                    className="event-nav-btn"
-                    disabled={!eventNav.canPrev}
-                    onClick={() => eventNav.onStep(-1)}
-                    aria-label="Ir al evento anterior"
-                  >
-                    Anterior
-                  </button>
-                  <button
-                    type="button"
-                    className="event-nav-btn"
-                    disabled={!eventNav.canNext}
-                    onClick={() => eventNav.onStep(1)}
-                    aria-label="Ir al evento siguiente"
-                  >
-                    Siguiente
-                  </button>
-                </div>
-              ) : null}
               <h2 className="detail-title">{sel.item.title}</h2>
               <p className="detail-meta">{formatDate(sel.item.date)}</p>
               <ul className="detail-items">
