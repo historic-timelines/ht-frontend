@@ -21,6 +21,25 @@
 
 html {
   overflow-x: hidden;
+  /*
+   * Tamaño raíz fluido: casi todo el UI usa rem; valores ~0.65rem quedaban muy chicos
+   * en tablets (p. ej. iPad ~768px) y con pointer: fine no aplicaban reglas coarse.
+   */
+  font-size: clamp(15px, 0.45vw + 14px, 17px);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: clamp(16.5px, 0.55vw + 13.5px, 20px);
+  }
+}
+
+@media (min-width: 1280px) {
+  html {
+    font-size: clamp(16px, 0.35vw + 14px, 18px);
+  }
 }
 
 /* Visor: altura fija al viewport para que el scroll sea solo dentro de cada panel */
