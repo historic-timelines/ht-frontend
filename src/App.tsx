@@ -1286,9 +1286,6 @@ export default function App() {
                             width: `${width}%`,
                             backgroundColor: p.color,
                             color: foregroundForHex(p.color),
-                            boxShadow: isActive
-                              ? `0 0 0 2px ${p.color}`
-                              : undefined,
                           }}
                           onClick={() => setSel({ kind: "period", item: p })}
                           title={`${formatDate(p.start)} — ${formatDate(p.end)}`}

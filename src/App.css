@@ -1370,11 +1370,18 @@
   filter: brightness(0.95);
 }
 
-/* .bar.active: anillo de color del período (inline en App.tsx) + relieve */
+/*
+ * Período activo: sin scale (evita ensanchar la barra y solapar carriles).
+ * Anillo tipo evento: trazo contra el fondo + acento (box-shadow no cambia layout).
+ */
 .bar.active {
   z-index: 4;
-  transform: translateY(-50%) scale(1.06);
+  transform: translateY(-50%);
   filter: brightness(1.1);
+  box-shadow:
+    0 0 0 2px var(--bg),
+    0 0 0 4px var(--accent),
+    0 0 10px color-mix(in srgb, var(--accent) 28%, transparent);
 }
 
 .bar-text {
