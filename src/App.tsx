@@ -401,10 +401,11 @@ function labelIntervalsOverlap(
   return a[0] < b[1] + gapPct && a[1] > b[0] - gapPct;
 }
 
-/** Coincide con el gap visual punto–texto: mitad del disco (14px) + gap del flex (2–3px). */
+/** Desde el centro del punto al inicio del texto (estado inactivo; coincide con gap base en App.css). */
 function eventLabelEdgePx(pointerCoarse: boolean): number {
   const dotHalfPx = 7;
-  return dotHalfPx + (pointerCoarse ? 3 : 2);
+  const flexGapPx = pointerCoarse ? 4.5 : 5; /* ~0.28rem / 0.3rem @16px root */
+  return dotHalfPx + flexGapPx;
 }
 
 /**

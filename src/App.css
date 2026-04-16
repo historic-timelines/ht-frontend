@@ -1529,7 +1529,9 @@
   top: 50%;
   display: inline-flex;
   align-items: center;
-  gap: 2px;
+  /* Inactivo: cerca del disco; seleccionado: más aire (anillo + scale en .event-dot.active) */
+  gap: 0.3rem;
+  transition: gap 0.12s ease;
   width: max-content;
   max-width: none;
   margin: 0;
@@ -1592,11 +1594,19 @@
   transform: translate(-50%, -50%);
 }
 
+.event-marker--selected .event-hit {
+  gap: 0.55rem;
+}
+
 @media (pointer: coarse) {
   .event-marker .event-hit {
-    gap: 3px;
+    gap: 0.28rem;
     min-height: var(--touch-target-min, 44px);
-    padding: 0.18rem 0;
+    padding: 0.12rem 0.15rem;
+  }
+
+  .event-marker--selected .event-hit {
+    gap: 0.5rem;
   }
 
   .event-hit::before {
@@ -1649,15 +1659,15 @@
 }
 
 .event-dot.active::after {
-  transform: scale(1.35);
+  transform: scale(1.12);
   box-shadow:
-    0 0 0 3px var(--accent),
-    0 0 14px color-mix(in srgb, var(--accent) 45%, transparent);
+    0 0 0 2px var(--accent),
+    0 0 8px color-mix(in srgb, var(--accent) 38%, transparent);
 }
 
 .event-dot.active:hover::after,
 .event-dot.active:active::after {
-  transform: scale(1.45);
+  transform: scale(1.18);
 }
 
 .event-marker--selected .event-label-h {
