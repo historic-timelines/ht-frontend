@@ -249,24 +249,20 @@
   }
 }
 
+/*
+ * Grid: la fila del timeline mide lo que pide el contenido (hasta max-height del wrap).
+ * Con flex column + hijo flex:1 abajo, el chart-wrap (flex-shrink:1) se encogía hasta
+ * min-height:11rem y apenas se veían eventos hasta elegir uno (donde antes solo aplicaba grid).
+ * La segunda fila absorbe el resto (listas + detalle).
+ */
 .viewer-main {
   flex: 1;
   min-height: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-/*
- * Con selección: la fila del timeline mide solo lo que pide el contenido (p. ej. modo compacto
- * tras elegir un evento). Si fuera 1fr + height:100%, el chart se estira a media pantalla y
- * queda un vacío enorme debajo del eje. Abajo va todo el espacio restante (listas + detalle).
- */
-.viewer-shell--has-selection .viewer-main {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   grid-template-rows: auto minmax(0, 1fr);
   gap: 0;
+  overflow: hidden;
 }
 
 .viewer-shell--has-selection .viewer-chart-wrap,
