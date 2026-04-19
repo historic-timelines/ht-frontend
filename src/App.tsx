@@ -124,6 +124,15 @@ function firstEventInPeriod(
   return null;
 }
 
+/** Selección inicial del visor: primer evento en orden cronológico. */
+function defaultEventSelection(events: TimelineEvent[]): Selection {
+  if (events.length === 0) return null;
+  const first = [...events].sort(
+    (a, b) => a.date.getTime() - b.date.getTime()
+  )[0]!;
+  return { kind: "event", item: first };
+}
+
 function foregroundForHex(hex: string): string {
   const raw = hex.trim().replace(/^#/, "");
   if (raw.length !== 3 && raw.length !== 6) return "var(--text)";
@@ -838,7 +847,9 @@ export default function App() {
   }, [periods]);
 
   const navigate = useNavigate();
-  const [sel, setSel] = useState<Selection>(null);
+  const [sel, setSel] = useState<Selection>(() =>
+    defaultEventSelection(timelineHistoriaArgentina.events)
+  );
   const [helpOpen, setHelpOpen] = useState(false);
   const [viewerHeaderCollapsed, setViewerHeaderCollapsed] = useState(false);
   /** Zoom, escala del eje y navegación de eventos (panel inferior del timeline). */
@@ -1423,7 +1434,6 @@ export default function App() {
                     type="button"
                     className="viewer-inicio-btn"
                     onClick={() => {
-                      setSel(null);
                       setHelpOpen(false);
                       navigate("/");
                     }}
