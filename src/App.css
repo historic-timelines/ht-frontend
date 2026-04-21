@@ -827,7 +827,7 @@
   --timeline-event-label-room: var(--events-row-pad-bottom);
   --timeline-axis-gap: 0.5rem;
   --period-rows-total-h: calc(
-    var(--period-row-count, 1) * var(--period-compact-row-h, 1.06rem)
+    var(--period-row-count, 1) * var(--period-compact-row-h, 0.56rem)
   );
   /* Alto carril: pista un poco más alta + aire vertical para que el rótulo no roce el vecino */
   --events-lane-label-line-h: 0.36rem;
@@ -896,24 +896,28 @@
 
 .timeline-stack--compact .period-row .row-bar {
   /* Alto sincronizado con `compactPeriodRowRem` en App.tsx (`--period-compact-row-h`) */
-  height: var(--period-compact-row-h, 1.06rem);
+  height: var(--period-compact-row-h, 0.56rem);
 }
 
 .timeline-stack--compact .period-row .bar {
-  min-height: max(2px, calc(var(--period-compact-row-h, 1.06rem) - 0.1rem));
-  height: calc(var(--period-compact-row-h, 1.06rem) - 0.06rem);
+  min-height: max(2px, calc(var(--period-compact-row-h, 0.56rem) - 0.1rem));
+  height: calc(var(--period-compact-row-h, 0.56rem) - 0.06rem);
   max-height: calc(100% - 1px);
   padding: 0 clamp(0.2rem, 0.55vmin, 0.42rem);
 }
 
 @media (pointer: coarse) {
   .timeline-stack--compact .period-row .bar {
-    min-height: max(2px, calc(var(--period-compact-row-h, 1.06rem) - 0.08rem));
+    min-height: max(2px, calc(var(--period-compact-row-h, 0.56rem) - 0.08rem));
   }
 }
 
 .timeline-stack--compact .period-row .bar-text {
-  font-size: clamp(0.56rem, calc(var(--period-compact-row-h, 1.06rem) * 0.56), 0.7rem);
+  font-size: clamp(
+    0.46rem,
+    calc(var(--period-compact-row-h, 0.56rem) * 0.48),
+    0.88rem
+  );
 }
 
 .timeline-stack--compact .event-label-h {
@@ -1807,8 +1811,23 @@
   filter: grayscale(0.35);
 }
 
-.events-lane--filtered-off .events-lane__row--dots {
-  pointer-events: none;
+/* Los puntos siguen clickeables (eventos atenuados, no eliminados de la vista). */
+
+.event-connector--lanes-muted {
+  opacity: 0.34;
+}
+
+.event-connector--lanes-muted.event-connector--selected {
+  opacity: 1;
+}
+
+.event-marker--lanes-muted {
+  opacity: 0.36;
+}
+
+.event-marker--lanes-muted.event-marker--selected,
+.event-marker--lanes-muted.event-marker--related {
+  opacity: 1;
 }
 
 /*

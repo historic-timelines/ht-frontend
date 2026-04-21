@@ -196,9 +196,42 @@ function isTypingTarget(target: EventTarget | null): boolean {
 /** Debe coincidir con altura de `.row-bar` y `margin-bottom` de `.period-row` en App.css */
 const ROW_BAR_REM = 2.25;
 const ROW_MARGIN_REM = 0.1;
-/** Fallback si no hay `--period-compact-row-h` (debe ser coherente con App.css) */
-const ROW_BAR_REM_COMPACT = 1.06;
+/** Fallback si no hay `--period-compact-row-h` (alineado con `lo` en `lerpPeriodRowRemFromDriver`) */
+const ROW_BAR_REM_COMPACT = 0.56;
 const ROW_MARGIN_REM_COMPACT = 0;
+
+/**
+ * Convierte una dimensión del viewport (en rems de raíz) en valor para interpolar el alto del
+ * período. Hasta ~56rem (móvil + tablet tipo iPad en portrait) el resultado vive en el mismo
+ * rango que un teléfono, así el carril se ve casi tan bajo en tablet como en mobile; recién
+ * después sube para portátiles / monitores.
+ */
+function periodRowDriverRem(vminLikeInRem: number): number {
+  const v = vminLikeInRem;
+  if (v <= 56) {
+    return 12 + (v / 56) * 11.5;
+  }
+  if (v < 80) {
+    const at56 = 12 + 11.5;
+    return at56 + (v - 56) * 1.15;
+  }
+  const at80 = 12 + 11.5 + 24 * 1.15;
+  return Math.min(at80 + (v - 80) * 1.08, 100);
+}
+
+function lerpPeriodRowRemFromDriver(
+  driverInRem: number,
+  pointerCoarse: boolean
+): number {
+  const lo = pointerCoarse ? 0.74 : 0.56;
+  const hi = pointerCoarse ? 1.92 : 1.66;
+  /* Por encima de ~20 el carril crece poco hasta ~68 (tablet queda casi en `lo` como el móvil) */
+  const start = 20;
+  const end = pointerCoarse ? 76 : 68;
+  if (driverInRem <= start) return lo;
+  if (driverInRem >= end) return hi;
+  return lo + ((hi - lo) * (driverInRem - start)) / (end - start);
+}
 
 function periodRowCenterFromTopRem(
   rowIndex: number,
@@ -886,6 +919,8 @@ export default function App() {
       typeof window !== "undefined"
         ? Math.min(window.innerWidth, window.innerHeight)
         : 480,
+    vhPx:
+      typeof window !== "undefined" ? window.innerHeight : 800,
     rootPx: 16,
   }));
   const [pointerCoarse, setPointerCoarse] = useState(
@@ -912,6 +947,7 @@ export default function App() {
         16;
       setLayoutProbe({
         vminPx: Math.min(window.innerWidth, window.innerHeight),
+        vhPx: window.innerHeight,
         rootPx,
       });
     };
@@ -920,13 +956,20 @@ export default function App() {
     return () => window.removeEventListener("resize", sync);
   }, []);
 
-  /** Carril de período compacto: crece con vmin y con pointer coarse (click táctil). */
+  /**
+   * Alto de carril de período (rem): tablet comparte el mismo “bucket” de driver que móvil
+   * (casi el mismo alto); monitores grandes siguen cómodos. `min(driver(vmin), driver(vh))`
+   * respeta ventanas bajas o poco alto útil.
+   */
   const compactPeriodRowRem = useMemo(() => {
-    const { vminPx, rootPx } = layoutProbe;
-    const mid = (1.4 * (vminPx / 100)) / rootPx + 0.78;
-    const lo = pointerCoarse ? 1.04 : 0.94;
-    const hi = pointerCoarse ? 1.52 : 1.4;
-    return Math.min(hi, Math.max(lo, mid));
+    const { vminPx, vhPx, rootPx } = layoutProbe;
+    const vminInRem = vminPx / rootPx;
+    const vhInRem = vhPx / rootPx;
+    const driver = Math.min(
+      periodRowDriverRem(vminInRem),
+      periodRowDriverRem(vhInRem)
+    );
+    return lerpPeriodRowRemFromDriver(driver, pointerCoarse);
   }, [layoutProbe, pointerCoarse]);
 
   const activePeriodForTimeline = useMemo((): Period | null => {
@@ -1858,7 +1901,6 @@ export default function App() {
                 <TimelineSemanticEventLanes
                   laneVisibility={laneVisibility}
                   eventsSorted={eventsSorted}
-                  eventPassesLaneFilter={eventPassesLaneFilter}
                   trackPct={(t) => pctOnTrack(t, min, max)}
                   selection={sel}
                   studyMode={studyMode}
@@ -1910,11 +1952,11 @@ export default function App() {
                         const pl = eventLabelPlacements[eventIdx]!;
                         const isConnActive =
                           sel?.kind === "event" && sel.item === e;
-                        if (!eventPassesLaneFilter(e)) return null;
+                        const lanesMuted = !eventPassesLaneFilter(e);
                         return (
                           <div
                             key={`conn-title-${e.title}-${e.date.toISOString()}`}
-                            className={`event-connector${isConnActive ? " event-connector--selected" : ""}`}
+                            className={`event-connector${isConnActive ? " event-connector--selected" : ""}${lanesMuted ? " event-connector--lanes-muted" : ""}`.trim()}
                             style={
                               {
                                 left: `${pctOnTrack(e.date.getTime(), min, max)}%`,
@@ -1940,11 +1982,11 @@ export default function App() {
                         causalHighlight.has(e) &&
                         sel.item !== e;
                       const p = pctOnTrack(e.date.getTime(), min, max);
-                      if (!eventPassesLaneFilter(e)) return null;
+                      const lanesMuted = !eventPassesLaneFilter(e);
                       return (
                         <div
                           key={`title-${e.title}-${e.date.toISOString()}`}
-                          className={`event-marker ${isEventActive ? "event-marker--selected" : ""}${isRelated ? " event-marker--related" : ""}`.trim()}
+                          className={`event-marker ${isEventActive ? "event-marker--selected" : ""}${isRelated ? " event-marker--related" : ""}${lanesMuted ? " event-marker--lanes-muted" : ""}`.trim()}
                           style={
                             {
                               left: `${p}%`,
