@@ -494,6 +494,7 @@ export default function App() {
   const [viewerHeaderCollapsed, setViewerHeaderCollapsed] = useState(false);
   const [indexOpen, setIndexOpen] = useState(false);
   const [detailCollapsed, setDetailCollapsed] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   /** Zoom, escala del eje y navegación de eventos (panel inferior del timeline). */
   const [timelineChromeExpanded, setTimelineChromeExpanded] = useState(false);
   const [timelineZoom, setTimelineZoom] = useState(1);
@@ -1135,11 +1136,41 @@ export default function App() {
                     {formatShortDate(new Date(max))}
                   </p>
                 </div>
+                <div
+                  className="viewer-study-modes"
+                  role="radiogroup"
+                  aria-label="Modo de estudio"
+                >
+                  {(
+                    [
+                      ["normal", "Normal"],
+                      ["exam", "Examen"],
+                      ["causal", "Causal"],
+                    ] as const
+                  ).map(([id, label]) => (
+                    <button
+                      key={id}
+                      type="button"
+                      role="radio"
+                      aria-checked={studyMode === id}
+                      className={`viewer-study-mode-btn${studyMode === id ? " viewer-study-mode-btn--active" : ""}`.trim()}
+                      onClick={() => setStudyMode(id)}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
                 <div className="viewer-toolbar-actions">
                   <button
                     type="button"
                     className="viewer-map-btn viewer-map-btn--with-label"
-                    onClick={() => setIndexOpen((open) => !open)}
+                    onClick={() => {
+                      setIndexOpen((open) => {
+                        const next = !open;
+                        if (next) setDetailCollapsed(true);
+                        return next;
+                      });
+                    }}
                     aria-expanded={indexOpen}
                     aria-controls="viewer-index-panel"
                     aria-label={indexOpen ? "Ocultar índice" : "Mostrar índice"}
@@ -1199,6 +1230,65 @@ export default function App() {
                       </svg>
                     </button>
                   ) : null}
+                  <div className="viewer-layers-menu">
+                    <button
+                      type="button"
+                      className="viewer-map-btn viewer-map-btn--with-label"
+                      onClick={() => setFiltersOpen((open) => !open)}
+                      aria-expanded={filtersOpen}
+                      aria-controls="viewer-lane-filter-menu"
+                      aria-label="Capas semánticas"
+                      title="Capas"
+                    >
+                      <svg
+                        className="viewer-header-icon-svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                      >
+                        <path
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="m12 3 8 4.5-8 4.5-8-4.5L12 3Zm0 9 8-4.5M12 12 4 7.5M4 12l8 4.5 8-4.5M4 16.5l8 4.5 8-4.5"
+                        />
+                      </svg>
+                      <span>Capas</span>
+                    </button>
+                    {filtersOpen ? (
+                      <div
+                        id="viewer-lane-filter-menu"
+                        className="viewer-lane-filter-menu"
+                        role="group"
+                        aria-label="Visibilidad por carril semántico"
+                      >
+                        {EVENT_LANE_ORDER.map((laneId) => (
+                          <button
+                            key={laneId}
+                            type="button"
+                            className="viewer-lane-filter"
+                            aria-pressed={laneVisibility[laneId]}
+                            title={
+                              laneVisibility[laneId]
+                                ? `Ocultar carril ${LANE_UI[laneId].label}`
+                                : `Mostrar carril ${LANE_UI[laneId].label}`
+                            }
+                            style={
+                              {
+                                "--lane-chip-fg": LANE_UI[laneId].color,
+                              } as CSSProperties
+                            }
+                            onClick={() => toggleLaneVisibility(laneId)}
+                          >
+                            {LANE_UI[laneId].label}
+                          </button>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
                   <a
                     href={VIEWER_SOURCE_REPO_URL}
                     className="viewer-github-link"
@@ -1287,62 +1377,6 @@ export default function App() {
                     </svg>
                   </button>
                 </div>
-                </div>
-                <div
-                  className="viewer-study-toolbar"
-                  role="toolbar"
-                  aria-label="Modo de estudio y carriles"
-                >
-                  <div
-                    className="viewer-study-modes"
-                    role="radiogroup"
-                    aria-label="Modo de estudio"
-                  >
-                    {(
-                      [
-                        ["normal", "Normal"],
-                        ["exam", "Examen"],
-                        ["causal", "Causal"],
-                      ] as const
-                    ).map(([id, label]) => (
-                      <button
-                        key={id}
-                        type="button"
-                        role="radio"
-                        aria-checked={studyMode === id}
-                        className={`viewer-study-mode-btn${studyMode === id ? " viewer-study-mode-btn--active" : ""}`.trim()}
-                        onClick={() => setStudyMode(id)}
-                      >
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                  <div
-                    className="viewer-lane-filters"
-                    aria-label="Visibilidad por carril semántico"
-                  >
-                    {EVENT_LANE_ORDER.map((laneId) => (
-                      <button
-                        key={laneId}
-                        type="button"
-                        className="viewer-lane-filter"
-                        aria-pressed={laneVisibility[laneId]}
-                        title={
-                          laneVisibility[laneId]
-                            ? `Ocultar carril ${LANE_UI[laneId].label}`
-                            : `Mostrar carril ${LANE_UI[laneId].label}`
-                        }
-                        style={
-                          {
-                            "--lane-chip-fg": LANE_UI[laneId].color,
-                          } as CSSProperties
-                        }
-                        onClick={() => toggleLaneVisibility(laneId)}
-                      >
-                        {LANE_UI[laneId].label}
-                      </button>
-                    ))}
-                  </div>
                 </div>
               </header>
             </div>
@@ -1831,7 +1865,10 @@ export default function App() {
             <button
               type="button"
               className="viewer-map-fab viewer-map-fab--index"
-              onClick={() => setIndexOpen(true)}
+              onClick={() => {
+                setIndexOpen(true);
+                setDetailCollapsed(true);
+              }}
               aria-controls="viewer-index-panel"
               aria-expanded={false}
               aria-label="Mostrar índice de períodos y eventos"

@@ -3279,3 +3279,180 @@
     padding-top: clamp(5.45rem, 15dvh, 7.8rem);
   }
 }
+
+/* UX pass 2: one-row map chrome, separate layers popover, centered canvas. */
+.viewer-toolbar {
+  width: fit-content;
+  max-width: calc(100vw - 1rem);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.38rem;
+  padding: 0.25rem 0.32rem;
+  background: color-mix(in srgb, #151d2c 92%, transparent);
+  border-color: color-mix(in srgb, #51627a 48%, transparent);
+}
+
+.viewer-toolbar-top {
+  display: contents;
+}
+
+.viewer-toolbar-text {
+  flex: 0 1 auto;
+  min-width: min(11rem, 34vw);
+  max-width: 18rem;
+  padding-right: 0.18rem;
+}
+
+.viewer-toolbar-title {
+  font-size: clamp(0.82rem, 1vw, 0.94rem);
+  letter-spacing: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.viewer-toolbar-range {
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 0.62rem;
+  line-height: 1.05;
+}
+
+.viewer-study-toolbar {
+  display: none;
+}
+
+.viewer-study-modes {
+  flex-wrap: nowrap;
+  gap: 0.12rem;
+  padding: 0.12rem;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--bg) 42%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 52%, transparent);
+}
+
+.viewer-study-mode-btn {
+  min-height: 1.38rem;
+  padding: 0.14rem 0.4rem;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 0.62rem;
+  letter-spacing: 0.02em;
+  border-color: transparent;
+  background: transparent;
+}
+
+.viewer-study-mode-btn--active {
+  background: color-mix(in srgb, var(--accent) 18%, var(--surface));
+  border-color: color-mix(in srgb, var(--accent) 42%, transparent);
+}
+
+.viewer-toolbar-actions {
+  flex-wrap: nowrap;
+  gap: 0.22rem;
+}
+
+.viewer-map-btn,
+.viewer-help-btn,
+.viewer-inicio-btn,
+.viewer-github-link,
+.viewer-instagram-link,
+.viewer-header-peek-toggle {
+  background: color-mix(in srgb, #202b3d 88%, var(--bg));
+  border-color: color-mix(in srgb, #66758d 36%, transparent);
+}
+
+.viewer-layers-menu {
+  position: relative;
+  display: inline-flex;
+}
+
+.viewer-lane-filter-menu {
+  position: absolute;
+  z-index: 45;
+  top: calc(100% + 0.38rem);
+  right: 0;
+  width: min(15rem, 72vw);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.25rem;
+  padding: 0.42rem;
+  border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, #151d2c 96%, var(--bg));
+  box-shadow: 0 14px 32px color-mix(in srgb, #000 42%, transparent);
+}
+
+.viewer-lane-filter-menu .viewer-lane-filter {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 1.7rem;
+  justify-content: flex-start;
+  padding: 0.18rem 0.44rem;
+  border-radius: 6px;
+  background: color-mix(in srgb, currentColor 8%, #182233);
+  color: color-mix(in srgb, var(--lane-chip-fg, var(--accent)) 82%, var(--text));
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 0.64rem;
+  text-align: left;
+}
+
+.viewer-lane-filter-menu .viewer-lane-filter[aria-pressed="false"] {
+  opacity: 0.48;
+  filter: grayscale(0.45);
+}
+
+.chart--viewer.chart-bleed,
+.viewer-shell--has-selection .chart--viewer.chart-bleed {
+  padding-top: clamp(3.25rem, 7.4dvh, 4.9rem);
+  padding-bottom: clamp(3.1rem, 6.8dvh, 4.5rem);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, #111a2a 58%, var(--bg)) 0%,
+      var(--bg) 44%
+    );
+}
+
+.chart--viewer.chart-bleed .timeline-scroll {
+  display: flex;
+  align-items: center;
+}
+
+.chart--viewer.chart-bleed .timeline-stack {
+  flex: 0 0 auto;
+}
+
+.timeline-stack--compact {
+  --timeline-axis-gap: 0.62rem;
+}
+
+.timeline-stack--compact .event-label-v,
+.timeline-stack--compact .event-label-h {
+  font-size: 0.64rem;
+}
+
+.timeline-scale-overlay {
+  background: color-mix(in srgb, #151d2c 84%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 48%, transparent);
+}
+
+@media (max-width: 70rem) {
+  .viewer-toolbar {
+    width: auto;
+    max-width: calc(100vw - 0.9rem);
+  }
+
+  .viewer-toolbar-text {
+    min-width: 8.5rem;
+    max-width: 13rem;
+  }
+
+  .viewer-study-mode-btn {
+    padding-inline: 0.32rem;
+  }
+
+  .viewer-map-btn--with-label span {
+    display: none;
+  }
+}

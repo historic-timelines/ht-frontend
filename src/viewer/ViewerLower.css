@@ -698,3 +698,138 @@
     width: min(20rem, calc(100vw - 1rem));
   }
 }
+
+/* UX pass 2: tabbed index and peripheral map panels. */
+.viewer-floating-panel,
+.viewer-detail-panel {
+  background: color-mix(in srgb, #172131 96%, var(--surface));
+  border-color: color-mix(in srgb, #6a7890 36%, transparent);
+}
+
+.viewer-floating-panel {
+  top: clamp(4.25rem, 9dvh, 5.7rem);
+  width: min(21rem, calc(100vw - 1.1rem));
+  max-height: min(42dvh, 25rem);
+}
+
+.viewer-floating-panel__head {
+  padding: 0.42rem 0.52rem 0.34rem;
+}
+
+.viewer-floating-panel__head h2 {
+  font-size: 0.88rem;
+}
+
+.viewer-index-panel__body {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 0.36rem;
+  padding: 0.42rem;
+}
+
+.viewer-index-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.12rem;
+  padding: 0.12rem;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--bg) 44%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 52%, transparent);
+}
+
+.viewer-index-tab {
+  min-width: 0;
+  min-height: 1.55rem;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+}
+
+.viewer-index-tab[aria-selected="true"] {
+  color: var(--text);
+  border-color: color-mix(in srgb, var(--accent) 38%, transparent);
+  background: color-mix(in srgb, var(--accent) 15%, var(--surface));
+}
+
+.viewer-index-list-viewport {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.viewer-index-scroll-block {
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.viewer-index-panel .linkish {
+  padding: 0.18rem 0.38rem;
+  font-family: Inter, system-ui, sans-serif;
+}
+
+.viewer-index-panel .period-link__text > strong,
+.viewer-index-panel .event-link__text > strong {
+  font-family: "IBM Plex Serif", Georgia, serif;
+  font-size: 0.75rem;
+}
+
+.viewer-index-panel .period-link__dates.timeline-date,
+.viewer-index-panel .event-link__date.timeline-date {
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 0.62rem;
+}
+
+.viewer-index-panel .period-list li,
+.viewer-index-panel .event-list li {
+  margin-bottom: 0.18rem;
+}
+
+.viewer-detail-panel {
+  top: auto;
+  bottom: clamp(3.45rem, 7dvh, 4.8rem);
+  width: min(25rem, calc(100vw - 1.1rem));
+  max-height: min(43dvh, 26rem);
+}
+
+.viewer-detail-panel--collapsed {
+  width: min(21rem, calc(100vw - 1.1rem));
+}
+
+.viewer-detail-panel__summary {
+  padding: 0.42rem 0.56rem;
+}
+
+.viewer-detail-panel__body {
+  padding: 0 0.68rem 0.68rem;
+}
+
+.viewer-detail-panel .detail-meta.timeline-date,
+.viewer-detail-panel .detail-importance,
+.viewer-detail-panel .detail-exam-hint,
+.viewer-detail-panel .detail-causal-hint,
+.viewer-detail-panel .detail-causal-title,
+.viewer-detail-panel .links a {
+  font-family: Inter, system-ui, sans-serif;
+}
+
+@media (max-width: 70rem) {
+  .viewer-floating-panel {
+    top: clamp(4.75rem, 10dvh, 6.2rem);
+    max-height: min(38dvh, 22rem);
+  }
+
+  .viewer-detail-panel {
+    bottom: clamp(3.6rem, 8dvh, 4.7rem);
+    max-height: min(38dvh, 22rem);
+  }
+}

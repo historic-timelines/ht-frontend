@@ -95,13 +95,13 @@ export function ViewerIndexPanel({
 }: ViewerIndexPanelProps) {
   const periodListSelectedRef = useRef<HTMLButtonElement | null>(null);
   const eventListSelectedRef = useRef<HTMLButtonElement | null>(null);
-  const [periodsPanelOpen, setPeriodsPanelOpen] = useState(true);
-  const [eventsPanelOpen, setEventsPanelOpen] = useState(true);
+  const [activeTab, setActiveTab] = useState<"periods" | "events">(() =>
+    sel?.kind === "period" ? "periods" : "events"
+  );
 
   useEffect(() => {
     if (sel == null) return;
-    if (sel.kind === "period") setPeriodsPanelOpen(true);
-    else setEventsPanelOpen(true);
+    setActiveTab(sel.kind === "period" ? "periods" : "events");
   }, [sel]);
 
   useLayoutEffect(() => {
@@ -114,14 +114,12 @@ export function ViewerIndexPanel({
       block: "center",
       inline: "nearest",
     };
-    if (sel.kind === "period") {
-      if (!periodsPanelOpen) return;
+    if (sel.kind === "period" && activeTab === "periods") {
       periodListSelectedRef.current?.scrollIntoView(opts);
-    } else {
-      if (!eventsPanelOpen) return;
+    } else if (sel.kind === "event" && activeTab === "events") {
       eventListSelectedRef.current?.scrollIntoView(opts);
     }
-  }, [sel, periodsPanelOpen, eventsPanelOpen]);
+  }, [sel, activeTab]);
 
   return (
     <PanelChrome
@@ -131,34 +129,38 @@ export function ViewerIndexPanel({
       onClose={onClose}
     >
       <div className="viewer-index-panel__body">
-        <div className="viewer-lower-legend-section">
+        <div
+          className="viewer-index-tabs"
+          role="tablist"
+          aria-label="Tipo de índice"
+        >
           <button
             type="button"
-            className="viewer-lower-legend-toggle"
-            aria-expanded={periodsPanelOpen}
+            role="tab"
+            aria-selected={activeTab === "periods"}
             aria-controls="viewer-lower-period-list"
-            id="viewer-lower-period-heading"
-            onClick={() => setPeriodsPanelOpen((o) => !o)}
+            className="viewer-index-tab"
+            onClick={() => setActiveTab("periods")}
           >
-            <span className="viewer-lower-legend-chevron" aria-hidden>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M6 9l6 6 6-6"
-                  stroke="currentColor"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </span>
-            <span className="viewer-lower-legend-toggle-label">Períodos</span>
+            Períodos
           </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "events"}
+            aria-controls="viewer-lower-event-list"
+            className="viewer-index-tab"
+            onClick={() => setActiveTab("events")}
+          >
+            Eventos
+          </button>
+        </div>
+        <div className="viewer-index-list-viewport">
+          {activeTab === "periods" ? (
           <div
             id="viewer-lower-period-list"
-            role="region"
-            aria-labelledby="viewer-lower-period-heading"
-            hidden={!periodsPanelOpen}
-            className="viewer-lower-scroll-block"
+            role="tabpanel"
+            className="viewer-index-scroll-block"
           >
             <ul className="period-list">
               {periods.map((p) => {
@@ -201,36 +203,11 @@ export function ViewerIndexPanel({
               })}
             </ul>
           </div>
-        </div>
-
-        <div className="viewer-lower-legend-section viewer-lower-legend-section--events">
-          <button
-            type="button"
-            className="viewer-lower-legend-toggle"
-            aria-expanded={eventsPanelOpen}
-            aria-controls="viewer-lower-event-list"
-            id="viewer-lower-events-heading"
-            onClick={() => setEventsPanelOpen((o) => !o)}
-          >
-            <span className="viewer-lower-legend-chevron" aria-hidden>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M6 9l6 6 6-6"
-                  stroke="currentColor"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </span>
-            <span className="viewer-lower-legend-toggle-label">Eventos</span>
-          </button>
+          ) : (
           <div
             id="viewer-lower-event-list"
-            role="region"
-            aria-labelledby="viewer-lower-events-heading"
-            hidden={!eventsPanelOpen}
-            className="viewer-lower-scroll-block"
+            role="tabpanel"
+            className="viewer-index-scroll-block"
           >
             <ul className="event-list">
               {events.map((e) => {
@@ -262,6 +239,7 @@ export function ViewerIndexPanel({
               })}
             </ul>
           </div>
+          )}
         </div>
       </div>
     </PanelChrome>
