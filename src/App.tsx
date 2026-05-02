@@ -472,7 +472,7 @@ function axisDecadeBands(
       leftPct,
       widthPct,
       stripe: axisBandStripeIndex(D, bandYears),
-      decadeLabel: axisBandLabel(D),
+      decadeLabel: axisBandLabel(D, bandYears),
     });
   }
   return out;
@@ -511,8 +511,9 @@ function yearAxisMicroTicks(
   return out;
 }
 
-function axisBandLabel(startYear: number): string {
-  return formatHistoricalYear(startYear);
+function axisBandLabel(startYear: number, bandYears: number): string {
+  const bandStartYear = Math.floor(startYear / bandYears) * bandYears;
+  return formatHistoricalYear(bandStartYear);
 }
 
 /** Zoom horizontal del timeline (Ctrl + rueda). 1 = ancho base en CSS. */
