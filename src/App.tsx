@@ -26,6 +26,9 @@ import {
   axisMarkLaneOffsetPx,
   assignAxisMarkLanes,
   assignEventLabelLanes,
+  groupOverlappingEvents,
+  readRootRemPx,
+  verticalColumnWidthPx,
   axisTickAriaLabel,
   chooseAxisScaleDetail,
   chooseTimelineZoomMax,
@@ -37,6 +40,8 @@ import {
   TimelineSemanticEventLanes,
   TimelineEventTitlesLane,
   utcYearStartMs,
+  type EventCluster,
+  type AxisMark,
 } from "./timeline";
 import { AxisTickMark } from "./AxisTickMark";
 import {
@@ -818,16 +823,40 @@ export default function App() {
     return m;
   }, [axisMarks, axisShowYearFlags]);
 
-  const axisMarksPlaced = useMemo(
-    () =>
-      assignAxisMarkLanes(
-        axisMarks,
-        (tMs: number) => pctOnTrack(tMs, min, max),
-        axisShowYearByT,
-        stackWidthPx
-      ),
-    [axisMarks, min, max, axisShowYearByT, stackWidthPx]
-  );
+  const eventClusters = useMemo((): EventCluster[] => {
+    if (!stackWidthPx || stackWidthPx <= 0) return [];
+    const trackPct = (tMs: number) => pctOnTrack(tMs, min, max);
+    const colPx = verticalColumnWidthPx(pointerCoarse, readRootRemPx());
+    return groupOverlappingEvents(
+      eventsSorted,
+      [{ lane: 0, anchor: "center", maxWidthPx: 160, columnPx: colPx }],
+      trackPct,
+      stackWidthPx
+    ).clusters;
+  }, [eventsSorted, min, max, stackWidthPx, pointerCoarse]);
+
+  const axisMarksPlaced = useMemo(() => {
+    const tPct = (tMs: number) => pctOnTrack(tMs, min, max);
+
+    const clusteredTs = new Set(
+      eventClusters.flatMap((c) => c.events.map((e) => e.date.getTime()))
+    );
+    const filtered = axisMarks.filter((m) => !clusteredTs.has(m.t));
+
+    const rangeMarks: AxisMark[] = eventClusters.map((c) => ({
+      t: Math.round((c.minMs + c.maxMs) / 2),
+      year: c.rangeLabel,
+      monthDay: "",
+      rangeLabel: c.rangeLabel,
+    }));
+
+    const augmented = [...filtered, ...rangeMarks].sort((a, b) => a.t - b.t);
+
+    const showYear = new Map<number, boolean>(axisShowYearByT);
+    for (const rm of rangeMarks) showYear.set(rm.t, true);
+
+    return assignAxisMarkLanes(augmented, tPct, showYear, stackWidthPx);
+  }, [axisMarks, min, max, axisShowYearByT, stackWidthPx, eventClusters]);
 
   const axisMarkMaxLaneOffsetPx = useMemo(
     () =>
@@ -1180,6 +1209,56 @@ export default function App() {
     }
     setTimelineZoom(z1);
   }, [timelineZoomMax]);
+
+  const onClusterClick = useCallback(
+    (cluster: EventCluster) => {
+      const scrollEl = timelineScrollRef.current;
+      if (!scrollEl || stackWidthPx == null || stackWidthPx <= 0) return;
+
+      const colPx =
+        eventLabelPlacements[0]?.columnPx ??
+        verticalColumnWidthPx(pointerCoarse, readRootRemPx());
+
+      // Porcentaje mínimo entre eventos adyacentes del cluster (escala-invariante)
+      const pcts = cluster.events
+        .map((e) => pctOnTrack(e.date.getTime(), min, max))
+        .sort((a, b) => a - b);
+      let pctDiffMin = Infinity;
+      for (let i = 1; i < pcts.length; i++) {
+        pctDiffMin = Math.min(pctDiffMin, pcts[i]! - pcts[i - 1]!);
+      }
+
+      // Threshold consistente con groupOverlappingEvents: (col + gap) / stackPx * 100
+      // Necesitamos stackPx_new tal que (col+gap)/stackPx_new*100 < pctDiffMin / safety
+      const CLUSTER_GAP_PX = 4;
+      const SAFETY = 1.5;
+
+      let newZoom: number;
+      if (pctDiffMin <= 0) {
+        // Misma fecha: no se pueden separar, ir al máximo
+        newZoom = timelineZoomMax;
+      } else {
+        const requiredStackPx = ((colPx + CLUSTER_GAP_PX) * 100 * SAFETY) / pctDiffMin;
+        const baseContainerPx = stackWidthPx / timelineZoom;
+        newZoom = clamp(requiredStackPx / baseContainerPx, TIMELINE_ZOOM_MIN, timelineZoomMax);
+      }
+
+      pendingZoomAnchorRef.current = {
+        frac: cluster.centerPct / 100,
+        viewportX: scrollEl.clientWidth / 2,
+      };
+      setTimelineZoom(newZoom);
+    },
+    [
+      timelineZoom,
+      timelineZoomMax,
+      stackWidthPx,
+      pointerCoarse,
+      eventLabelPlacements,
+      min,
+      max,
+    ]
+  );
 
   const onZoomSliderChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -2163,6 +2242,8 @@ export default function App() {
                     setSel({ kind: "event", item: e })
                   }
                   timelineSelectedEventDotRef={timelineSelectedEventDotRef}
+                  clusters={eventClusters}
+                  onClusterClick={onClusterClick}
                 />
               </div>
             </div>

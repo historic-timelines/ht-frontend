@@ -71,7 +71,13 @@ export function AxisTickMark({
     >
       <span className="tick-line" aria-hidden />
       <span className={labelClass}>
-        {singleVerticalLine ? (
+        {mark.rangeLabel ? (
+          <span className="tick-label-axis-vline timeline-date">
+            <span className="tick-label-axis-vline-year tick--range-label">
+              {mark.rangeLabel}
+            </span>
+          </span>
+        ) : singleVerticalLine ? (
           <span className="tick-label-axis-vline timeline-date">
             {showYear ? (
               <>

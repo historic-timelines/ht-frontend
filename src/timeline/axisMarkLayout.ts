@@ -8,7 +8,7 @@ import {
   formatHistoricalYearDate,
 } from "./historicalDateFormat";
 
-export type AxisMark = { t: number; year: string; monthDay: string };
+export type AxisMark = { t: number; year: string; monthDay: string; rangeLabel?: string };
 
 const AXIS_MARK_LANE_GAP_PCT = 0.32;
 const AXIS_MARK_FIRST_OF_YEAR_GAP_PCT = 0.72;

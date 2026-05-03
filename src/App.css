@@ -3487,3 +3487,95 @@
     display: none;
   }
 }
+
+/* ─── Tick de rango para clusters ────────────────────────────────────────── */
+
+.tick--range-label {
+  font-style: italic;
+  opacity: 0.82;
+}
+
+/* ─── Cluster de eventos ──────────────────────────────────────────────────── */
+
+.evt-cluster-marker {
+  position: absolute;
+  width: 0;
+  height: 0;
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: 3;
+}
+
+.events-titles-lane .evt-cluster-marker {
+  top: calc(var(--evt-v-lane-shell-h, 200px) / 2);
+}
+
+.evt-cluster-hit {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translate(-50%, -50%);
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+  pointer-events: auto;
+  -webkit-tap-highlight-color: transparent;
+  isolation: isolate;
+}
+
+.evt-cluster-hit:focus {
+  outline: none;
+}
+
+.evt-cluster-hit:focus-visible .evt-cluster-disc {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.evt-cluster-disc {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 18%, var(--surface, #fff));
+  color: var(--text);
+  border: 2px solid var(--accent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent);
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  line-height: 1;
+  gap: 0;
+}
+
+.evt-cluster-hit:hover .evt-cluster-disc {
+  transform: scale(1.1);
+  background: color-mix(in srgb, var(--accent) 30%, var(--surface, #fff));
+  box-shadow: 0 0 0 2px var(--accent), 0 2px 6px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+.evt-cluster-hit:active .evt-cluster-disc {
+  transform: scale(0.96);
+}
+
+.evt-cluster-count {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.evt-cluster-unit {
+  font-size: 0.42rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  opacity: 0.88;
+  line-height: 1;
+}

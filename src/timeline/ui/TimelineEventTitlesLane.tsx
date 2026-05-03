@@ -1,10 +1,13 @@
 import type { CSSProperties, RefObject } from "react";
+import { useMemo } from "react";
 import type { StudyMode } from "../../../causality";
 import { semanticConnectorLaneSpanCount } from "../../../eventLanes";
 import type { Selection, TimelineEvent } from "../../../types";
 import { EventTitleMarkerVertical } from "./EventTitleMarkerVertical";
 import type { EventLabelPlacement } from "../eventLabelLayout";
 import { verticalColumnWidthPx, verticalEventTitlesRowLayoutPx } from "../eventLabelLayout";
+import type { EventCluster } from "../eventClusterLayout";
+import { EventClusterMarker } from "./EventClusterMarker";
 
 export type TimelineCausalitySvgEdge = {
   from: TimelineEvent;
@@ -27,6 +30,8 @@ export type TimelineEventTitlesLaneProps = {
   pointerCoarse: boolean;
   /** Para alinear alto del visor de título vertical con TS (`verticalEventTitlesRowLayoutPx`). */
   viewportInnerHeightPx: number;
+  clusters?: EventCluster[];
+  onClusterClick?: (cluster: EventCluster) => void;
 };
 
 /**
@@ -47,7 +52,13 @@ export function TimelineEventTitlesLane({
   timelineSelectedEventDotRef,
   pointerCoarse,
   viewportInnerHeightPx,
+  clusters,
+  onClusterClick,
 }: TimelineEventTitlesLaneProps) {
+  const clusteredSet = useMemo(
+    () => new Set(clusters?.flatMap((c) => c.events) ?? []),
+    [clusters]
+  );
   /**
    * Conector eje↔bola: `left%` de `.event-marker` = fecha en pista; Y del disco =
    * `--events-dot-half` (+ carril); `--ev-titles-v-connector-btm` cierra el punteado en el disco.
@@ -113,6 +124,7 @@ export function TimelineEventTitlesLane({
         ) : null}
         <div className="events-titles-lane__connectors" aria-hidden>
           {eventsSorted.map((e) => {
+            if (clusteredSet.has(e)) return null;
             const isConnActive = sel?.kind === "event" && sel.item === e;
             const lanesMuted = !eventPassesLaneFilter(e);
             return (
@@ -133,8 +145,28 @@ export function TimelineEventTitlesLane({
               />
             );
           })}
+          {clusters?.map((cluster) => {
+            const spanCount = Math.max(
+              ...cluster.events.map((e) => semanticConnectorLaneSpanCount(e.lanes))
+            );
+            return (
+              <div
+                key={`conn-cluster-${cluster.centerPct}`}
+                className="event-connector evt-cluster-connector"
+                style={
+                  {
+                    left: `${cluster.centerPct}%`,
+                    "--event-conn-lane": 0,
+                    "--event-connector-lane-span-count": spanCount,
+                    "--event-connector-stroke": "var(--accent)",
+                  } as CSSProperties
+                }
+              />
+            );
+          })}
         </div>
         {eventsSorted.map((e, idx) => {
+          if (clusteredSet.has(e)) return null;
           const pl = eventLabelPlacements[idx];
           const isEventActive = sel?.kind === "event" && sel.item === e;
           const isRelated =
@@ -159,6 +191,15 @@ export function TimelineEventTitlesLane({
             />
           );
         })}
+        {clusters?.map((cluster) =>
+          onClusterClick ? (
+            <EventClusterMarker
+              key={`cluster-${cluster.centerPct}`}
+              cluster={cluster}
+              onClick={onClusterClick}
+            />
+          ) : null
+        )}
       </div>
     </div>
   );
