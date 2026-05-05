@@ -18,7 +18,7 @@ import {
 } from "../causality";
 import { EVENT_LANE_ORDER, LANE_UI, type EventLaneId } from "../eventLanes";
 import type { Period, Selection, TimelineEvent } from "../types";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { SITE_INSTAGRAM_URL, KeyboardHelpModal } from "./shell";
 import { EventEditorModal, ViewerDetailPanel, ViewerIndexPanel } from "./viewer";
 /* Títulos de eventos: único modo vertical (layout+CSS); ver `timeline/eventLabelLayout.ts`. */
@@ -47,7 +47,6 @@ import { AxisTickMark } from "./AxisTickMark";
 import {
   TimelineEditionService,
   createTimelineRepo,
-  type TimelineSummary,
   type TimelineEventDraft,
 } from "./timelineEdition";
 import { useThemeMode, type ThemeMode } from "./shell/theme";
@@ -632,8 +631,8 @@ function formatApproxTimeSpan(ms: number): string {
 }
 
 export default function App() {
+  const { timelineSlug } = useParams<{ timelineSlug: string }>();
   const [timeline, setTimeline] = useState(() => timelineHistoriaArgentina);
-  const [timelineSummaries, setTimelineSummaries] = useState<TimelineSummary[]>([]);
   const [selectedTimelineId, setSelectedTimelineId] = useState<string | null>(null);
   const [timelineTitle, setTimelineTitle] = useState("Historia Argentina");
   const [timelineDescription, setTimelineDescription] = useState<string | null>(null);
@@ -773,31 +772,13 @@ export default function App() {
       window.matchMedia("(pointer: coarse)").matches
   );
 
-  const loadTimeline = useCallback(async (timelineId: string) => {
-    setTimelineApiStatus("loading");
-    const record = await timelineRepo.get(timelineId);
-    setSelectedTimelineId(record.id);
-    setTimelineTitle(record.title);
-    setTimelineDescription(record.description);
-    setTimeline(record.timeline);
-    setSel(defaultEventSelection(record.timeline.events));
-    setTimelineApiStatus("ready");
-  }, []);
-
   useEffect(() => {
+    if (!timelineSlug) return;
     let cancelled = false;
     async function loadInitialTimeline() {
       try {
         setTimelineApiStatus("loading");
-        const summaries = await timelineRepo.list();
-        if (cancelled) return;
-        setTimelineSummaries(summaries);
-        const first = summaries.find((item) => item.id === "argentina-history") ?? summaries[0];
-        if (!first) {
-          setTimelineApiStatus("error");
-          return;
-        }
-        const record = await timelineRepo.get(first.id);
+        const record = await timelineRepo.get(timelineSlug!);
         if (cancelled) return;
         setSelectedTimelineId(record.id);
         setTimelineTitle(record.title);
@@ -814,7 +795,7 @@ export default function App() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [timelineSlug]);
 
   const axisShowYearFlags = useMemo(
     () => computeAxisShowYearFlags(axisMarks),
@@ -1061,20 +1042,6 @@ export default function App() {
     });
   }, []);
 
-  const loadSelectedTimeline = useCallback(
-    async (event: ChangeEvent<HTMLSelectElement>) => {
-      const timelineId = event.target.value;
-      if (!timelineId) return;
-      try {
-        await loadTimeline(timelineId);
-      } catch (error) {
-        console.error("Could not switch timeline", error);
-        setTimelineApiStatus("error");
-      }
-    },
-    [loadTimeline]
-  );
-
   const createTimelineCopy = useCallback(async () => {
     try {
       setTimelineApiStatus("loading");
@@ -1083,18 +1050,12 @@ export default function App() {
         description: timelineDescription,
         timeline,
       });
-      setTimelineSummaries(await timelineRepo.list());
-      setSelectedTimelineId(record.id);
-      setTimelineTitle(record.title);
-      setTimelineDescription(record.description);
-      setTimeline(record.timeline);
-      setSel(defaultEventSelection(record.timeline.events));
-      setTimelineApiStatus("ready");
+      navigate(`/${record.id}`);
     } catch (error) {
       console.error("Could not create timeline copy", error);
       setTimelineApiStatus("error");
     }
-  }, [timeline, timelineDescription, timelineTitle]);
+  }, [navigate, timeline, timelineDescription, timelineTitle]);
 
   const saveNewEvent = useCallback(async (draft: TimelineEventDraft) => {
     if (!selectedTimelineId) return;
@@ -1631,23 +1592,7 @@ export default function App() {
                     {timelineApiStatus === "error" ? " · API no disponible" : ""}
                   </p>
                 </div>
-                <div className="viewer-timeline-picker">
-                  <label className="viewer-timeline-picker-label" htmlFor="viewer-timeline-select">
-                    Timeline
-                  </label>
-                  <select
-                    id="viewer-timeline-select"
-                    className="viewer-timeline-select"
-                    value={selectedTimelineId ?? ""}
-                    onChange={loadSelectedTimeline}
-                    disabled={timelineApiStatus === "loading" || timelineSummaries.length === 0}
-                  >
-                    {timelineSummaries.map((item) => (
-                      <option key={item.id} value={item.id}>
-                        {item.title}
-                      </option>
-                    ))}
-                  </select>
+                <div className="viewer-toolbar-actions">
                   <button
                     type="button"
                     className="viewer-map-btn viewer-map-btn--with-label"
@@ -1658,8 +1603,6 @@ export default function App() {
                   >
                     <span>Copiar</span>
                   </button>
-                </div>
-                <div className="viewer-toolbar-actions">
                   <div className="viewer-study-menu">
                     <button
                       type="button"

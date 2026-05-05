@@ -1,11 +1,13 @@
+import type { TimelineSummary } from "../timelineEdition";
 import { SITE_INSTAGRAM_URL } from "./siteLinks";
 import "./WelcomeScreen.css";
 
 type WelcomeScreenProps = {
-  onEnter: () => void;
+  timelines: TimelineSummary[] | null;
+  onSelectTimeline: (id: string) => void;
 };
 
-export function WelcomeScreen({ onEnter }: WelcomeScreenProps) {
+export function WelcomeScreen({ timelines, onSelectTimeline }: WelcomeScreenProps) {
   return (
     <div className="welcome-screen">
       <div className="welcome-screen-inner">
@@ -30,9 +32,32 @@ export function WelcomeScreen({ onEnter }: WelcomeScreenProps) {
             Instagram: @hisctorictimelines
           </a>
         </p>
-        <button type="button" className="welcome-cta" onClick={onEnter}>
-          Entrar al visor
-        </button>
+
+        {timelines === null ? (
+          <p className="welcome-timelines-loading">Cargando líneas de tiempo…</p>
+        ) : timelines.length === 0 ? (
+          <p className="welcome-timelines-empty">No hay líneas de tiempo disponibles.</p>
+        ) : (
+          <ul className="welcome-timeline-list">
+            {timelines.map((item) => (
+              <li key={item.id} className="welcome-timeline-card">
+                <div className="welcome-timeline-card-body">
+                  <span className="welcome-timeline-card-title">{item.title}</span>
+                  {item.description && (
+                    <span className="welcome-timeline-card-desc">{item.description}</span>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  className="welcome-timeline-card-btn"
+                  onClick={() => onSelectTimeline(item.id)}
+                >
+                  Ver
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </div>
   );
