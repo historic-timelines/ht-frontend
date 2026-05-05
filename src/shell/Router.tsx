@@ -17,10 +17,20 @@ function WelcomeRoute() {
     timelineRepo.list().then(setTimelines).catch(() => setTimelines([]));
   }, []);
 
+  async function handleCreateTimeline(title: string) {
+    const record = await timelineRepo.create({
+      title,
+      description: null,
+      timeline: { periods: [], events: [] },
+    });
+    navigate(`/${record.id}`);
+  }
+
   return (
     <WelcomeScreen
       timelines={timelines}
       onSelectTimeline={(id) => navigate(`/${id}`)}
+      onCreateTimeline={handleCreateTimeline}
     />
   );
 }
