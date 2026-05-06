@@ -8,6 +8,7 @@ import type { EventLabelPlacement } from "../eventLabelLayout";
 import { verticalColumnWidthPx, verticalEventTitlesRowLayoutPx } from "../eventLabelLayout";
 import type { EventCluster } from "../eventClusterLayout";
 import { EventClusterMarker } from "./EventClusterMarker";
+import type { PreviewChangeSet } from "../../timelineEdition/applyChangesLocally";
 
 export type TimelineCausalitySvgEdge = {
   from: TimelineEvent;
@@ -32,6 +33,7 @@ export type TimelineEventTitlesLaneProps = {
   viewportInnerHeightPx: number;
   clusters?: EventCluster[];
   onClusterClick?: (cluster: EventCluster) => void;
+  previewHighlight?: PreviewChangeSet;
 };
 
 /**
@@ -54,6 +56,7 @@ export function TimelineEventTitlesLane({
   viewportInnerHeightPx,
   clusters,
   onClusterClick,
+  previewHighlight,
 }: TimelineEventTitlesLaneProps) {
   const clusteredSet = useMemo(
     () => new Set(clusters?.flatMap((c) => c.events) ?? []),
@@ -176,6 +179,11 @@ export function TimelineEventTitlesLane({
             sel.item !== e;
           const p = trackPct(e.date.getTime());
           const lanesMuted = !eventPassesLaneFilter(e);
+          const previewStatus = previewHighlight?.added.has(e.id)
+            ? ("added" as const)
+            : previewHighlight?.updated.has(e.id)
+              ? ("updated" as const)
+              : undefined;
           return (
             <EventTitleMarkerVertical
               key={`title-${e.title}-${e.date.toISOString()}`}
@@ -185,6 +193,7 @@ export function TimelineEventTitlesLane({
               isRelated={isRelated}
               lanesMuted={lanesMuted}
               clipWidthPx={pl?.columnPx ?? verticalColumnWidthPx(pointerCoarse, 16)}
+              previewStatus={previewStatus}
               eventPointerTitle={eventPointerTitle}
               onSelectEvent={onSelectEvent}
               timelineSelectedEventDotRef={timelineSelectedEventDotRef}

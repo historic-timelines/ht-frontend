@@ -3655,38 +3655,124 @@
   opacity: 0.8;
 }
 
-/* Preview highlights on event dots */
+/* ── Preview: event dots ── */
+
+/* Nuevo: barra 3× más ancha, color accent, pulso fuerte */
 .event-marker--preview-added {
-  z-index: 2;
+  z-index: 5;
 }
 
-.event-marker--preview-added .event-lane-tick {
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 60%, transparent);
-  animation: preview-pulse 1.6s infinite ease-in-out;
+.events-lane--semantic .event-marker--preview-added .event-lane-tick {
+  width: max(9px, calc(var(--event-lane-tick-w, 3px) * 3));
+  border-radius: 3px;
+  background: var(--accent);
+  box-shadow:
+    0 0 0 2px var(--bg),
+    0 0 0 4px var(--accent),
+    0 0 18px color-mix(in srgb, var(--accent) 60%, transparent);
+  animation: preview-added-tick 1.25s infinite ease-in-out;
 }
 
-.event-marker--preview-updated .event-lane-tick {
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 50%, transparent);
+@keyframes preview-added-tick {
+  0%, 100% {
+    box-shadow:
+      0 0 0 2px var(--bg),
+      0 0 0 3px var(--accent),
+      0 0 10px color-mix(in srgb, var(--accent) 40%, transparent);
+  }
+  50% {
+    box-shadow:
+      0 0 0 2px var(--bg),
+      0 0 0 6px var(--accent),
+      0 0 24px color-mix(in srgb, var(--accent) 70%, transparent);
+  }
 }
 
-@keyframes preview-pulse {
-  0%, 100% { box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 40%, transparent); }
-  50% { box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 20%, transparent); }
+/* Modificado: barra 2× más ancha, tinte ámbar */
+.event-marker--preview-updated {
+  z-index: 4;
 }
 
-/* Preview highlights on period bars */
+.events-lane--semantic .event-marker--preview-updated .event-lane-tick {
+  width: max(6px, calc(var(--event-lane-tick-w, 3px) * 2));
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--event-dot-fill, var(--accent)) 50%, #d97706);
+  box-shadow:
+    0 0 0 1.5px var(--bg),
+    0 0 0 3px #d97706,
+    0 0 12px rgba(217, 119, 6, 0.55);
+}
+
+/* ── Preview: barras de período ── */
+
 .bar--preview-added {
-  outline: 2px solid var(--accent);
-  outline-offset: 1px;
-  animation: preview-pulse-bar 1.6s infinite ease-in-out;
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+  animation: preview-bar-added 1.25s infinite ease-in-out;
+}
+
+@keyframes preview-bar-added {
+  0%, 100% {
+    outline-width: 2.5px;
+    filter: brightness(1.08);
+  }
+  50% {
+    outline-width: 4px;
+    filter: brightness(1.18);
+    box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 50%, transparent);
+  }
 }
 
 .bar--preview-updated {
-  outline: 1.5px solid color-mix(in srgb, var(--accent) 70%, transparent);
-  outline-offset: 1px;
+  outline: 2.5px solid #d97706;
+  outline-offset: 2px;
+  filter: brightness(1.1);
+  box-shadow: 0 0 10px rgba(217, 119, 6, 0.4);
 }
 
-@keyframes preview-pulse-bar {
-  0%, 100% { outline-color: color-mix(in srgb, var(--accent) 50%, transparent); }
-  50% { outline-color: var(--accent); }
+/* ── Preview: marcadores de título de eventos ── */
+
+/* Nuevo: disco accent + texto accent en negrita + pulso */
+.evt-v-marker--preview-added .event-dot::after {
+  background: var(--accent);
+  border-color: var(--bg);
+  box-shadow:
+    0 0 0 2px var(--bg),
+    0 0 0 4px var(--accent),
+    0 0 14px color-mix(in srgb, var(--accent) 60%, transparent);
+  animation: preview-title-added 1.25s infinite ease-in-out;
+}
+
+@keyframes preview-title-added {
+  0%, 100% {
+    box-shadow:
+      0 0 0 2px var(--bg),
+      0 0 0 3px var(--accent),
+      0 0 8px color-mix(in srgb, var(--accent) 40%, transparent);
+  }
+  50% {
+    box-shadow:
+      0 0 0 2px var(--bg),
+      0 0 0 5px var(--accent),
+      0 0 20px color-mix(in srgb, var(--accent) 65%, transparent);
+  }
+}
+
+.evt-v-marker--preview-added .evt-v-caption.timeline-event-title {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* Modificado: disco ámbar + texto ligeramente distinto */
+.evt-v-marker--preview-updated .event-dot::after {
+  background: color-mix(in srgb, var(--event, var(--accent)) 50%, #d97706);
+  box-shadow:
+    0 0 0 1.5px var(--bg),
+    0 0 0 3px #d97706,
+    0 0 10px rgba(217, 119, 6, 0.5);
+}
+
+.evt-v-marker--preview-updated .evt-v-caption.timeline-event-title {
+  color: #d97706;
+  font-weight: 600;
 }

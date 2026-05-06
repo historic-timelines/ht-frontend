@@ -1,8 +1,7 @@
-import {
+import React, {
   useEffect,
   useRef,
   useState,
-  type FormEvent,
   type KeyboardEvent,
 } from "react";
 import type {
@@ -45,6 +44,10 @@ function changeLabel(change: TimelineChange): string {
   const title =
     (change.data?.title as string | undefined) ?? change.target_id ?? null;
   return title ? `${base}: ${title}` : base;
+}
+
+function ShortcutHint({ children }: { children: string }) {
+  return <span className="ai-btn-shortcut">{children}</span>;
 }
 
 function ProposedChanges({
@@ -133,40 +136,49 @@ function ProposedChanges({
 
       <div className="ai-chat-changes__actions">
         {previewing ? (
-          <button
-            type="button"
-            className="viewer-editor-btn ai-chat-changes__preview-btn ai-chat-changes__preview-btn--active"
-            onClick={onCancelPreview}
-          >
-            Cancelar vista previa
-            <kbd className="ai-shortcut">Ctrl+⌫</kbd>
-          </button>
+          <div className="ai-btn-wrap">
+            <button
+              type="button"
+              className="viewer-editor-btn ai-chat-changes__preview-btn ai-chat-changes__preview-btn--active"
+              onClick={onCancelPreview}
+            >
+              Vista previa activa
+            </button>
+          </div>
         ) : (
+          <div className="ai-btn-wrap">
+            <button
+              type="button"
+              className="viewer-editor-btn ai-chat-changes__preview-btn"
+              disabled={busy}
+              onClick={() => onPreview(proposedChanges, id)}
+            >
+              Ver en timeline
+            </button>
+          </div>
+        )}
+        <div className="ai-btn-wrap">
           <button
             type="button"
-            className="viewer-editor-btn ai-chat-changes__preview-btn"
+            className="viewer-editor-btn"
             disabled={busy}
-            onClick={() => onPreview(proposedChanges, id)}
+            onClick={() => onApply(proposedChanges, id)}
           >
-            Vista previa
+            {applying ? "Aplicando…" : "Aceptar"}
           </button>
-        )}
-        <button
-          type="button"
-          className="viewer-editor-btn ai-chat-changes__apply-btn"
-          disabled={busy}
-          onClick={() => onApply(proposedChanges, id)}
-        >
-          {applying ? "Aplicando…" : "Aplicar"}
-        </button>
-        <button
-          type="button"
-          className="viewer-editor-btn viewer-editor-btn--danger"
-          disabled={busy}
-          onClick={() => onDismiss(id)}
-        >
-          Descartar
-        </button>
+          {previewing && <ShortcutHint>Ctrl+↵</ShortcutHint>}
+        </div>
+        <div className="ai-btn-wrap">
+          <button
+            type="button"
+            className="viewer-editor-btn viewer-editor-btn--danger"
+            disabled={busy}
+            onClick={() => onDismiss(id)}
+          >
+            Rechazar
+          </button>
+          {previewing && <ShortcutHint>Ctrl+⌫</ShortcutHint>}
+        </div>
       </div>
     </div>
   );
@@ -242,7 +254,7 @@ export function AiChatPanel({
     onSend(trimmed);
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     submit();
   };
@@ -250,13 +262,25 @@ export function AiChatPanel({
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && e.ctrlKey) {
       e.preventDefault();
-      submit();
+      if (draft.trim()) {
+        // Send if there's text
+        submit();
+      } else if (previewedMessageId != null) {
+        // Accept previewed changes if input is empty
+        const msg = conversation?.messages.find((m) => m.id === previewedMessageId);
+        if (msg && applyingMessageId == null) {
+          onApply(msg.proposedChanges, msg.id);
+        }
+      }
+      return;
     }
     if (e.key === "Backspace" && e.ctrlKey && previewedMessageId != null) {
       e.preventDefault();
-      onCancelPreview();
+      onDismiss(previewedMessageId);
     }
   };
+
+  const hasDraft = draft.trim().length > 0;
 
   return (
     <section
@@ -359,25 +383,17 @@ export function AiChatPanel({
               disabled={sending}
               aria-label="Mensaje al asistente"
             />
-            <button
-              type="submit"
-              className="ai-chat-panel__send-btn"
-              disabled={!draft.trim() || sending}
-              aria-label="Enviar"
-              title="Enviar (Ctrl+↵)"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
-                <path
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"
-                />
-              </svg>
-              <kbd className="ai-shortcut ai-shortcut--send">Ctrl+↵</kbd>
-            </button>
+            <div className="ai-btn-wrap">
+              <button
+                type="submit"
+                className="ai-chat-panel__send-btn"
+                disabled={!hasDraft || sending}
+                aria-label="Enviar mensaje"
+              >
+                Enviar
+              </button>
+              <ShortcutHint>Ctrl+↵</ShortcutHint>
+            </div>
           </form>
         </>
       )}

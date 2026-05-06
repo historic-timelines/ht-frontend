@@ -1,10 +1,9 @@
-import {
+import React, {
   useEffect,
   useLayoutEffect,
   useRef,
   useState,
   type CSSProperties,
-  type FormEvent,
   type ReactNode,
 } from "react";
 import type { StudyMode } from "../../causality";
@@ -319,7 +318,7 @@ export function EventEditorModal({
   const selectedOptions = (select: HTMLSelectElement): string[] =>
     Array.from(select.selectedOptions).map((option) => option.value);
 
-  const submit = async (e: FormEvent) => {
+  const submit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSaving(true);
     setError(null);

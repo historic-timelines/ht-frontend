@@ -648,6 +648,8 @@ function formatApproxTimeSpan(ms: number): string {
 export default function App() {
   const { timelineSlug } = useParams<{ timelineSlug: string }>();
   const [timeline, setTimeline] = useState(() => timelineHistoriaArgentina);
+  const timelineRef = useRef(timeline);
+  useEffect(() => { timelineRef.current = timeline; }, [timeline]);
   const [selectedTimelineId, setSelectedTimelineId] = useState<string | null>(null);
   const [timelineTitle, setTimelineTitle] = useState("Cargando…");
   const [timelineDescription, setTimelineDescription] = useState<string | null>(null);
@@ -845,12 +847,45 @@ export default function App() {
     if (!selectedTimelineId) return;
     setAiSending(true);
     setAiError(null);
+
+    // Mostrar el mensaje del usuario de inmediato (optimistic)
+    const optimisticMsg = {
+      id: "__optimistic__",
+      role: "user" as const,
+      content,
+      createdAt: new Date(),
+      proposedChanges: [] as TimelineChange[],
+    };
+    setAiConversation((prev) =>
+      prev
+        ? { ...prev, messages: [...prev.messages, optimisticMsg] }
+        : { timelineId: selectedTimelineId, messages: [optimisticMsg] }
+    );
+
     try {
       const conv = await aiService.sendMessage(selectedTimelineId, content);
       setAiConversation(conv);
+
+      // Auto-preview: activar si el último mensaje del asistente tiene cambios
+      const lastMsg = conv.messages[conv.messages.length - 1];
+      if (lastMsg?.role === "assistant" && lastMsg.proposedChanges.length > 0) {
+        const { timeline: preview, changeSet } = applyChangesLocally(
+          timelineRef.current,
+          lastMsg.proposedChanges
+        );
+        setPreviewTimeline(preview);
+        setPreviewChangeSet(changeSet);
+        setPreviewedMessageId(lastMsg.id);
+      }
     } catch (error) {
       console.error("AI message failed", error);
       setAiError({ kind: "send", message: String(error) });
+      // Revertir el mensaje optimista
+      setAiConversation((prev) =>
+        prev
+          ? { ...prev, messages: prev.messages.filter((m) => m.id !== "__optimistic__") }
+          : prev
+      );
     } finally {
       setAiSending(false);
     }
@@ -2338,6 +2373,7 @@ export default function App() {
                   timelineSelectedEventDotRef={timelineSelectedEventDotRef}
                   clusters={eventClusters}
                   onClusterClick={onClusterClick}
+                  previewHighlight={previewChangeSet ?? undefined}
                 />
               </div>
             </div>

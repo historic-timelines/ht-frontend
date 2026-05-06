@@ -8,6 +8,7 @@ export type EventTitleMarkerVerticalProps = {
   isRelated: boolean;
   lanesMuted: boolean;
   clipWidthPx: number;
+  previewStatus?: "added" | "updated";
   eventPointerTitle: (e: TimelineEvent) => string;
   onSelectEvent: (e: TimelineEvent) => void;
   timelineSelectedEventDotRef: RefObject<HTMLButtonElement | null>;
@@ -24,15 +25,23 @@ export function EventTitleMarkerVertical({
   isRelated,
   lanesMuted,
   clipWidthPx,
+  previewStatus,
   eventPointerTitle,
   onSelectEvent,
   timelineSelectedEventDotRef,
 }: EventTitleMarkerVerticalProps) {
   const clipStyle: CSSProperties = { width: clipWidthPx }
- 
+
   return (
     <div
-      className={`evt-v-marker ${isEventActive ? "evt-v-marker--selected" : ""}${isRelated ? " evt-v-marker--related" : ""}${lanesMuted ? " evt-v-marker--lanes-muted" : ""}`.trim()}
+      className={[
+        "evt-v-marker",
+        isEventActive ? "evt-v-marker--selected" : "",
+        isRelated ? "evt-v-marker--related" : "",
+        lanesMuted ? "evt-v-marker--lanes-muted" : "",
+        previewStatus === "added" ? "evt-v-marker--preview-added" : "",
+        previewStatus === "updated" ? "evt-v-marker--preview-updated" : "",
+      ].filter(Boolean).join(" ")}
       style={
         {
           left: `${p}%`,
