@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { TimelineSummary } from "../timelineEdition";
 import { SITE_INSTAGRAM_URL } from "./siteLinks";
 import "./WelcomeScreen.css";
@@ -5,9 +6,35 @@ import "./WelcomeScreen.css";
 type WelcomeScreenProps = {
   timelines: TimelineSummary[] | null;
   onSelectTimeline: (id: string) => void;
+  onCreateTimeline: (title: string) => Promise<void>;
 };
 
-export function WelcomeScreen({ timelines, onSelectTimeline }: WelcomeScreenProps) {
+export function WelcomeScreen({ timelines, onSelectTimeline, onCreateTimeline }: WelcomeScreenProps) {
+  const [showForm, setShowForm] = useState(false);
+  const [newTitle, setNewTitle] = useState("");
+  const [createError, setCreateError] = useState<string | null>(null);
+  const [createPending, setCreatePending] = useState(false);
+
+  async function handleCreate(e: React.FormEvent) {
+    e.preventDefault();
+    const title = newTitle.trim();
+    if (!title) return;
+    setCreatePending(true);
+    setCreateError(null);
+    try {
+      await onCreateTimeline(title);
+    } catch {
+      setCreateError("No se pudo crear la línea de tiempo. Intentá de nuevo.");
+      setCreatePending(false);
+    }
+  }
+
+  function handleCancel() {
+    setShowForm(false);
+    setNewTitle("");
+    setCreateError(null);
+  }
+
   return (
     <div className="welcome-screen">
       <div className="welcome-screen-inner">
@@ -57,6 +84,50 @@ export function WelcomeScreen({ timelines, onSelectTimeline }: WelcomeScreenProp
               </li>
             ))}
           </ul>
+        )}
+
+        {timelines !== null && (
+          <div className="welcome-create-section">
+            {showForm ? (
+              <form className="welcome-create-form" onSubmit={handleCreate}>
+                <input
+                  type="text"
+                  className="welcome-create-input"
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                  placeholder="Título de la línea de tiempo"
+                  autoFocus
+                  disabled={createPending}
+                />
+                {createError && <p className="welcome-create-error">{createError}</p>}
+                <div className="welcome-create-actions">
+                  <button
+                    type="submit"
+                    className="welcome-timeline-card-btn"
+                    disabled={createPending || !newTitle.trim()}
+                  >
+                    {createPending ? "Creando…" : "Crear"}
+                  </button>
+                  <button
+                    type="button"
+                    className="welcome-create-cancel"
+                    onClick={handleCancel}
+                    disabled={createPending}
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <button
+                type="button"
+                className="welcome-cta--add"
+                onClick={() => setShowForm(true)}
+              >
+                + Nueva línea de tiempo
+              </button>
+            )}
+          </div>
         )}
       </div>
     </div>
