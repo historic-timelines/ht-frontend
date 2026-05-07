@@ -564,8 +564,6 @@ const TIMELINE_ZOOM_MIN = 0.35;
 const TIMELINE_ZOOM_DEFAULT_MAX = 14;
 const TIMELINE_ZOOM_STEP = 1.085;
 
-/** Ancho visual de la barra de escala (px); el texto indica el lapso temporal que cubre. */
-const SCALE_BAR_PX = 112;
 
 /** Viewport “tablet” para el visor: barras colapsadas al entrar. */
 const VIEWER_TABLET_MQ = "(max-width: 1024px)";
@@ -615,33 +613,6 @@ function touchPinchMidViewportX(scrollEl: HTMLElement, touches: TouchList): numb
   return mx - r.left;
 }
 
-/** Lapso aproximado representado por `ms`, para la leyenda tipo mapa (es-AR). */
-function formatApproxTimeSpan(ms: number): string {
-  if (!Number.isFinite(ms) || ms <= 0) return "—";
-  const day = 86_400_000;
-  const year = 365.25 * day;
-  const month = year / 12;
-  if (ms >= year) {
-    const y = ms / year;
-    if (y >= 10) return `≈ ${Math.round(y)} años`;
-    const rounded = y >= 2 ? Math.round(y) : Math.round(y * 10) / 10;
-    const unit = rounded === 1 ? "año" : "años";
-    return `≈ ${String(rounded).replace(".", ",")} ${unit}`;
-  }
-  if (ms >= month * 1.5) {
-    const m = ms / month;
-    const rounded = Math.max(1, Math.round(m));
-    return `≈ ${rounded} ${rounded === 1 ? "mes" : "meses"}`;
-  }
-  if (ms >= day) {
-    const d = ms / day;
-    const rounded = Math.max(1, Math.round(d));
-    return `≈ ${rounded} ${rounded === 1 ? "día" : "días"}`;
-  }
-  const h = ms / 3_600_000;
-  const rounded = Math.max(1, Math.round(h));
-  return `≈ ${rounded} ${rounded === 1 ? "hora" : "horas"}`;
-}
 
 export default function App() {
   const { timelineSlug } = useParams<{ timelineSlug: string }>();
@@ -724,7 +695,7 @@ export default function App() {
   const [aiAppliedIds, setAiAppliedIds] = useState<ReadonlySet<string>>(new Set());
   const [aiNoEffectIds, setAiNoEffectIds] = useState<ReadonlySet<string>>(new Set());
   const [aiError, setAiError] = useState<AiChatError | null>(null);
-  const [toolbarExpanded, setToolbarExpanded] = useState(false);
+
   const [indexOpen, setIndexOpen] = useState(false);
   const [detailCollapsed, setDetailCollapsed] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -1265,14 +1236,6 @@ export default function App() {
     .filter(Boolean)
     .join(" ");
 
-  const rangeMs = max - min;
-
-  const scaleBarLabel = useMemo(() => {
-    if (stackWidthPx == null || stackWidthPx <= 0 || rangeMs <= 0) return "—";
-    const msForBar = (rangeMs / stackWidthPx) * SCALE_BAR_PX;
-    return formatApproxTimeSpan(msForBar);
-  }, [stackWidthPx, rangeMs]);
-
   useEffect(() => {
     const el = timelineStackRef.current;
     const scrollEl = timelineScrollRef.current;
@@ -1693,19 +1656,6 @@ export default function App() {
             <button
               type="button"
               className="viewer-toolbar-btn"
-              onClick={() => setToolbarExpanded((e) => !e)}
-              aria-expanded={toolbarExpanded}
-              aria-label={toolbarExpanded ? "Contraer barra" : "Más opciones"}
-              title={toolbarExpanded ? "Contraer" : "Más opciones"}
-            >
-              <svg className="viewer-header-icon-svg" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
-                <path fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-
-            <button
-              type="button"
-              className="viewer-toolbar-btn"
               onClick={() => {
                 setIndexOpen((open) => {
                   const next = !open;
@@ -1793,8 +1743,11 @@ export default function App() {
             </button>
           </div>
 
-          {toolbarExpanded && (
-            <div className="viewer-toolbar-secondary">
+          <span className="viewer-toolbar-title" title={timelineTitle}>
+            {timelineTitle}
+          </span>
+
+          <div className="viewer-toolbar-secondary">
               <button
                 type="button"
                 className="viewer-toolbar-btn viewer-toolbar-btn--with-label"
@@ -1931,7 +1884,6 @@ export default function App() {
                 </button>
               ) : null}
             </div>
-          )}
         </header>
 
         <div className="viewer-main">
@@ -2351,29 +2303,6 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="timeline-scale-overlay" aria-hidden>
-                <div className="timeline-scale-topline">
-                  <span className="timeline-scale-caption">Escala del eje</span>
-                  <div className="timeline-scale-label timeline-date">
-                    {scaleBarLabel}
-                  </div>
-                </div>
-                <div className="timeline-scale-rail-wrap">
-                  <div
-                    className="timeline-scale-rail"
-                    style={{ width: SCALE_BAR_PX }}
-                  />
-                  <div
-                    className="timeline-scale-ticks"
-                    style={{ width: SCALE_BAR_PX }}
-                  >
-                    <span />
-                    <span />
-                    <span />
-                    <span />
-                  </div>
-                </div>
-              </div>
           </div>
         </div>
       </section>

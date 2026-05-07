@@ -561,9 +561,9 @@
 
 .viewer-detail-panel {
   right: clamp(0.55rem, 1.35vw, 0.9rem);
-  top: clamp(5rem, 13dvh, 7.6rem);
+  bottom: clamp(0.55rem, 1.35vw, 0.9rem);
   width: min(27rem, calc(100vw - 1.1rem));
-  max-height: calc(100dvh - clamp(8.8rem, 22dvh, 11rem));
+  max-height: calc(100dvh - clamp(7rem, 14dvh, 9rem));
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -734,8 +734,7 @@
   }
 
   .viewer-detail-panel {
-    top: auto;
-    bottom: clamp(3.6rem, 8dvh, 4.8rem);
+    bottom: clamp(0.5rem, 1.2vw, 0.8rem);
     right: clamp(0.5rem, 1.2vw, 0.8rem);
     width: min(25rem, calc(100vw - 1rem));
     max-height: min(52dvh, 28rem);
@@ -843,7 +842,7 @@
 
 .viewer-detail-panel {
   top: auto;
-  bottom: clamp(3.45rem, 7dvh, 4.8rem);
+  bottom: clamp(0.55rem, 1.35vw, 0.9rem);
   width: min(25rem, calc(100vw - 1.1rem));
   max-height: min(72dvh, 46rem);
 }
@@ -872,7 +871,7 @@
   }
 
   .viewer-detail-panel {
-    bottom: clamp(3.6rem, 8dvh, 4.7rem);
+    bottom: clamp(0.5rem, 1.2vw, 0.8rem);
     max-height: min(38dvh, 22rem);
   }
 }
