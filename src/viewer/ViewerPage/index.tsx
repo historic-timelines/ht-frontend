@@ -65,6 +65,7 @@ import {
 import { timelineToJson } from "../../timelineEdition/timelineSerialization";
 import { useThemeMode } from "../../shell/theme";
 import "../../App.css";
+import { SearchPanel } from "@/components";
 
 const timelineRepo = createTimelineRepo();
 const timelineEditionService = new TimelineEditionService(timelineRepo);
@@ -2113,6 +2114,7 @@ export default function ViewerPage() {
             onRefinePlan={refineAiPlan}
           />
         ) : null}
+        <SearchPanel />
       </div>
     </div>
   );
