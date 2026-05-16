@@ -2114,7 +2114,7 @@ export default function ViewerPage() {
             onRefinePlan={refineAiPlan}
           />
         ) : null}
-        <SearchPanel />
+        <SearchPanel Timeline={{ periods, events }} />
       </div>
     </div>
   );

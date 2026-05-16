@@ -1,8 +1,35 @@
 import { useEffect, useState } from "react";
 import "./SearchPanel.css";
-
-export const SearchPanel = () => {
+import type { Period, Timeline as TimelineModel, TimelineEvent } from "../../types";
+const normalize = (str: string) =>
+    str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+export default function SearchPanel({ Timeline }: { Timeline: TimelineModel }) {
     const [visible, setVisible] = useState(false);
+    const [query, setQuery] = useState("");
+    const [filtered, setFiltered] = useState<Array<TimelineEvent | Period>>([]);
+    useEffect(() => {
+        const normalizedQuery = normalize(query.trim());
+
+        if (normalizedQuery === "") {
+            setFiltered([]);
+            return;
+        }
+
+        const eventMatches = Timeline.events.filter((event) => {
+            const titleMatch = normalize(event.title).includes(normalizedQuery);
+            const summaryMatch = event.summary ? normalize(event.summary).includes(normalizedQuery) : false;
+            const itemsMatch = event.items.some((item) => normalize(item).includes(normalizedQuery));
+            return titleMatch || summaryMatch || itemsMatch;
+        });
+
+        const periodMatches = Timeline.periods.filter((period) => {
+            const titleMatch = normalize(period.title).includes(normalizedQuery);
+            const itemsMatch = period.items.some((item) => normalize(item).includes(normalizedQuery));
+            return titleMatch || itemsMatch;
+        });
+
+        setFiltered([...eventMatches, ...periodMatches]);
+    }, [query, Timeline.events, Timeline.periods]);
 
     useEffect(() => {
         const onKeyDown = (e: KeyboardEvent) => {
@@ -23,10 +50,49 @@ export const SearchPanel = () => {
     if (!visible) {
         return null;
     }
+    const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setQuery(e.target.value);
+    };
+
+
+
+
+    const isPeriod = (item: TimelineEvent | Period): item is Period =>
+        !("id" in item);
 
     return (
         <div className="root">
-            <input type="text" autoFocus placeholder="Buscar periodo o evento..." className=" --border input" />
+            <div className="div-search">
+                <input
+                    type="text"
+                    autoFocus
+                    value={query}
+                    placeholder="Buscar periodo o evento..."
+                    className="input"
+                    onChange={handleOnChange}
+                />
+            </div>
+            {query !== "" && (
+                <div className="div-filtered">
+                    {filtered.length === 0 ? (
+                        <div className="empty-state">No se encontraron resultados.</div>
+                    ) : (
+                        filtered.map((item) => (
+                            <div
+                                key={isPeriod(item) ? `period-${item.title}` : item.id}
+                                className="item"
+                            >
+                                <div className="title">{item.title}</div>
+                                <div className="description">
+                                    {isPeriod(item)
+                                        ? item.items.join(" · ") || "Sin detalles"
+                                        : item.summary || item.items.join(" · ") || "Sin detalles"}
+                                </div>
+                            </div>
+                        ))
+                    )}
+                </div>
+            )}
         </div>
     );
 };
