@@ -44,3 +44,7 @@ export type Selection =
     | { kind: "period"; item: Period }
     | { kind: "event"; item: TimelineEvent }
     | null;
+
+export interface inputChange {
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+}
